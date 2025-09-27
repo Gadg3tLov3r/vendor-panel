@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   IconCamera,
   IconChartBar,
+  IconCreditCard,
   IconDashboard,
   IconDatabase,
   IconFileAi,
@@ -15,6 +16,7 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconWallet,
 } from "@tabler/icons-react";
 
 import { NavDocuments } from "@/components/nav-documents";
@@ -30,6 +32,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const data = {
   user: {
@@ -40,8 +43,18 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: IconDashboard,
+    },
+    {
+      title: "Topup",
+      url: "/topup",
+      icon: IconCreditCard,
+    },
+    {
+      title: "Wallets",
+      url: "/wallets",
+      icon: IconWallet,
     },
     {
       title: "Lifecycle",
@@ -149,6 +162,25 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, isLoading } = useAuth();
+
+  // Get authenticated user data or use default
+  const userData = user
+    ? {
+        name: user.username,
+        email: `${user.username}@vendor-panel.com`, // Default email format
+        avatar: "/avatars/brand.jpg",
+        role: user.roles?.[0]?.name || "Vendor",
+      }
+    : {
+        name: isLoading ? "Loading..." : "Guest",
+        email: isLoading
+          ? "loading@vendor-panel.com"
+          : "guest@vendor-panel.com",
+        avatar: "/avatars/brand.jpg",
+        role: isLoading ? "Loading" : "Unknown",
+      };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -172,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   );
