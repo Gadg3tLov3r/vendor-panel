@@ -4,10 +4,10 @@ import {
   IconCoin,
   IconCreditCard,
   IconDashboard,
+  IconDice3,
   IconHelp,
   IconSearch,
   IconSettings,
-  IconUserShield,
   IconWallet,
 } from "@tabler/icons-react";
 
@@ -102,8 +102,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <IconUserShield className="!size-5" />
-                <span className="text-base font-semibold">Vendor Panel</span>
+                <IconDice3 />
+                <span className="text-base font-semibold">Multipayz</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
