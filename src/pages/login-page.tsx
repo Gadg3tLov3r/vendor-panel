@@ -1,4 +1,3 @@
-import { IconDice3 } from "@tabler/icons-react";
 import { Navigate } from "react-router";
 import { useAuth } from "@/hooks/use-auth";
 
