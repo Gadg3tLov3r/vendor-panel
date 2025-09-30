@@ -23,6 +23,7 @@ import type {
   PayinBankAccountsResponse,
   CreatePayinBankAccountRequest,
   CreatePayinBankAccountResponse,
+  UpdatePayinBankAccountRequest,
   PaymentMethodsResponse,
   PaymentsListParams,
   PaymentsListResponse,
@@ -705,6 +706,73 @@ class TopupsService {
           error.response?.data?.message ||
           error.message ||
           "Failed to deactivate payin bank account";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getPayinBankAccount(bankAccountId: number): Promise<PayinBankAccount> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.get<PayinBankAccount>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.PAYIN_BANK_ACCOUNTS}/${bankAccountId}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch payin bank account";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async updatePayinBankAccount(
+    bankAccountId: number,
+    data: UpdatePayinBankAccountRequest
+  ): Promise<PayinBankAccount> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.patch<PayinBankAccount>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.PAYIN_BANK_ACCOUNTS}/${bankAccountId}`,
+        data,
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update payin bank account";
         throw new Error(message);
       }
       throw new Error("An unexpected error occurred");

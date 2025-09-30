@@ -11,6 +11,7 @@ import WalletsPage from "./pages/wallets-page";
 import PaymentsPage from "./pages/payments-page";
 import CreateTopupPage from "./pages/create-topup-page";
 import CreateBankAccountPage from "./pages/create-bank-account-page";
+import EditBankAccountPage from "./pages/edit-bank-account-page";
 import CreateWalletPage from "./pages/create-wallet-page";
 import WalletDetailsPage from "./pages/wallet-details-page";
 import { Route, Routes, Navigate } from "react-router";
@@ -83,6 +84,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <CreateBankAccountPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bank-accounts/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <EditBankAccountPage />
                 </ProtectedRoute>
               }
             />

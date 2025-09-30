@@ -21,7 +21,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { RefreshCw, Plus } from "lucide-react";
+import { RefreshCw, Plus, Edit } from "lucide-react";
 import { Link } from "react-router";
 
 export default function BankAccountsPage() {
@@ -253,6 +253,7 @@ export default function BankAccountsPage() {
                       <TableHead>Received Amount</TableHead>
                       <TableHead>Approve</TableHead>
                       <TableHead>Activate</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -299,6 +300,13 @@ export default function BankAccountsPage() {
                             }
                             disabled={activating === account.id}
                           />
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm" asChild>
+                            <Link to={`/bank-accounts/${account.id}/edit`}>
+                              <Edit className="h-4 w-4" />
+                            </Link>
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
