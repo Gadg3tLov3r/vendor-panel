@@ -249,6 +249,13 @@ export default function EditBankAccountPage() {
     paymentMethods.find((m) => m.id === bankAccount.payment_method_id)?.name ||
     bankAccount.payment_method_name;
 
+  // Helper function to format time for HTML input
+  const formatTimeForInput = (time: string) => {
+    if (!time) return "";
+    // Remove 'Z' and convert to HH:mm:ss format
+    return time.replace("Z", "").substring(0, 8);
+  };
+
   return (
     <SideBarLayout>
       <div className="flex flex-1 flex-col gap-4 p-4">
@@ -310,11 +317,26 @@ export default function EditBankAccountPage() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium leading-none">
+                      Category
+                    </label>
+                    <Input
+                      value={bankAccount.category || ""}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      This field cannot be changed
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none">
                       Start Time
                     </label>
                     <Input
                       type="time"
-                      value={bankAccount.start_time || "00:00:00.000Z"}
+                      value={formatTimeForInput(
+                        bankAccount.start_time || "00:00:00"
+                      )}
                       disabled
                       className="bg-muted"
                     />
@@ -328,7 +350,9 @@ export default function EditBankAccountPage() {
                     </label>
                     <Input
                       type="time"
-                      value={bankAccount.end_time || "23:59:59.999Z"}
+                      value={formatTimeForInput(
+                        bankAccount.end_time || "23:59:59"
+                      )}
                       disabled
                       className="bg-muted"
                     />

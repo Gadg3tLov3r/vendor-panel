@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -37,16 +36,8 @@ import { Link, useNavigate } from "react-router";
 
 const createPayinBankAccountSchema = z.object({
   payment_method_id: z.number().min(1, "Payment method ID must be at least 1"),
-  note: z.string().min(1, "Note is required"),
-  start_time: z.string().min(1, "Start time is required"),
-  end_time: z.string().min(1, "End time is required"),
-  min_amount: z.number().min(0, "Minimum amount must be at least 0"),
-  max_amount: z.number().min(0, "Maximum amount must be at least 0"),
-  receivable_amount: z.number().min(0, "Receivable amount must be at least 0"),
-  daily_receivable_amount: z
-    .number()
-    .min(0, "Daily receivable amount must be at least 0"),
   vendor_wallet_id: z.number().min(1, "Vendor wallet ID must be at least 1"),
+  category: z.string().min(1, "Category is required"),
   // Credential fields
   shop_name: z.string().optional(),
   username: z.string().optional(),
@@ -73,15 +64,9 @@ export default function CreateBankAccountPage() {
   const form = useForm<FormData>({
     resolver: zodResolver(createPayinBankAccountSchema),
     defaultValues: {
-      payment_method_id: 1,
-      note: "",
-      start_time: "00:00:00.000Z",
-      end_time: "23:59:59.999Z",
-      min_amount: 0,
-      max_amount: 0,
-      receivable_amount: 0,
-      daily_receivable_amount: 0,
+      payment_method_id: 0,
       vendor_wallet_id: 0,
+      category: "",
       // Credential fields
       shop_name: "",
       username: "",
@@ -118,6 +103,10 @@ export default function CreateBankAccountPage() {
         setPaymentMethodsLoading(true);
         const paymentMethodsResponse = await topupsService.getPaymentMethods();
         setPaymentMethods(paymentMethodsResponse);
+        // Set the first payment method as default
+        if (paymentMethodsResponse.length > 0) {
+          form.setValue("payment_method_id", paymentMethodsResponse[0].id);
+        }
       } catch (error) {
         const errorMessage =
           error instanceof Error
@@ -130,7 +119,7 @@ export default function CreateBankAccountPage() {
     };
 
     fetchData();
-  }, []);
+  }, [form]);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -142,7 +131,7 @@ export default function CreateBankAccountPage() {
       );
 
       // Build credentials object based on payment method
-      let credentials: Record<string, any> = {};
+      let credentials: Record<string, unknown> = {};
 
       if (selectedPaymentMethod) {
         switch (selectedPaymentMethod.name) {
@@ -180,23 +169,10 @@ export default function CreateBankAccountPage() {
         }
       }
 
-      // Remove credential fields from the main data object
-      const {
-        shop_name,
-        username,
-        password,
-        app_secret,
-        app_key,
-        mid,
-        public_key,
-        private_key,
-        qr_code_str,
-        account_no,
-        ...mainData
-      } = data;
-
       await topupsService.createPayinBankAccount({
-        ...mainData,
+        payment_method_id: data.payment_method_id,
+        vendor_wallet_id: data.vendor_wallet_id,
+        category: data.category,
         credentials,
       });
 
@@ -212,6 +188,12 @@ export default function CreateBankAccountPage() {
       setLoading(false);
     }
   };
+
+  // Get the selected payment method name
+  const selectedPaymentMethodId = form.watch("payment_method_id");
+  const selectedPaymentMethod = paymentMethods.find(
+    (m) => m.id === selectedPaymentMethodId
+  );
 
   return (
     <SideBarLayout>
@@ -257,7 +239,7 @@ export default function CreateBankAccountPage() {
                           onValueChange={(value) =>
                             field.onChange(parseInt(value))
                           }
-                          defaultValue={field.value?.toString()}
+                          value={field.value?.toString()}
                           disabled={paymentMethodsLoading}
                         >
                           <FormControl>
@@ -329,151 +311,34 @@ export default function CreateBankAccountPage() {
 
                   <FormField
                     control={form.control}
-                    name="start_time"
+                    name="category"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Start Time</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Daily start time for this bank account
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="end_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Time</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Daily end time for this bank account
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="min_amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minimum Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            min="0"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="max_amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Maximum Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            min="0"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="receivable_amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Receivable Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            min="0"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="daily_receivable_amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Daily Receivable Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            min="0"
-                          />
-                        </FormControl>
+                        <FormLabel>Category</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Merchant Plus">
+                              Merchant Plus
+                            </SelectItem>
+                            <SelectItem value="Lite A">Lite A</SelectItem>
+                            <SelectItem value="Lite B">Lite B</SelectItem>
+                            <SelectItem value="PRA">PRA</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Bank account category</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="note"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Note</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter additional notes about this bank account..."
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Additional information about this payin bank account
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
                 {/* Credential Fields Section */}
                 <div className="space-y-4">
@@ -481,8 +346,9 @@ export default function CreateBankAccountPage() {
                     Payment Method Credentials
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Fill in the required credential fields based on your
-                    selected payment method.
+                    {selectedPaymentMethod
+                      ? `Fill in the required credential fields for ${selectedPaymentMethod.name}`
+                      : "Select a payment method to see credential fields"}
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -507,10 +373,8 @@ export default function CreateBankAccountPage() {
                     />
 
                     {/* Shop Name - Required for BKASH_P2C, NAGAD_P2C, BKASH_QR */}
-                    {form.watch("payment_method_id") &&
-                      paymentMethods.find(
-                        (m) => m.id === form.watch("payment_method_id")
-                      )?.name !== "BKASH_P2P" && (
+                    {selectedPaymentMethod &&
+                      selectedPaymentMethod.name !== "BKASH_P2P" && (
                         <FormField
                           control={form.control}
                           name="shop_name"
@@ -531,10 +395,8 @@ export default function CreateBankAccountPage() {
                       )}
 
                     {/* BKASH_P2C specific fields */}
-                    {form.watch("payment_method_id") &&
-                      paymentMethods.find(
-                        (m) => m.id === form.watch("payment_method_id")
-                      )?.name === "BKASH_P2C" && (
+                    {selectedPaymentMethod &&
+                      selectedPaymentMethod.name === "BKASH_P2C" && (
                         <>
                           <FormField
                             control={form.control}
@@ -616,10 +478,8 @@ export default function CreateBankAccountPage() {
                       )}
 
                     {/* NAGAD_P2C specific fields */}
-                    {form.watch("payment_method_id") &&
-                      paymentMethods.find(
-                        (m) => m.id === form.watch("payment_method_id")
-                      )?.name === "NAGAD_P2C" && (
+                    {selectedPaymentMethod &&
+                      selectedPaymentMethod.name === "NAGAD_P2C" && (
                         <>
                           <FormField
                             control={form.control}
@@ -678,10 +538,8 @@ export default function CreateBankAccountPage() {
                       )}
 
                     {/* BKASH_QR specific fields */}
-                    {form.watch("payment_method_id") &&
-                      paymentMethods.find(
-                        (m) => m.id === form.watch("payment_method_id")
-                      )?.name === "BKASH_QR" && (
+                    {selectedPaymentMethod &&
+                      selectedPaymentMethod.name === "BKASH_QR" && (
                         <FormField
                           control={form.control}
                           name="qr_code_str"

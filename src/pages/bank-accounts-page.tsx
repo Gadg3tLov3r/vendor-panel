@@ -246,6 +246,7 @@ export default function BankAccountsPage() {
                     <TableRow>
                       <TableHead>Vendor Wallet</TableHead>
                       <TableHead>Payment Method</TableHead>
+                      <TableHead>Category</TableHead>
                       <TableHead>Active Hold Amount</TableHead>
                       <TableHead>Note</TableHead>
                       <TableHead>Min Amount</TableHead>
@@ -263,6 +264,7 @@ export default function BankAccountsPage() {
                           {account.vendor_wallet_name}
                         </TableCell>
                         <TableCell>{account.payment_method_name}</TableCell>
+                        <TableCell>{account.category || "—"}</TableCell>
                         <TableCell>
                           {formatCurrency(account.active_hold_amount)}
                         </TableCell>

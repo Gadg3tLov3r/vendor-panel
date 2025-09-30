@@ -246,21 +246,16 @@ export interface PayinBankAccount {
   is_active: boolean;
   is_approved: boolean;
   credentials: Record<string, unknown>;
+  category: string;
 }
 
 export type PayinBankAccountsResponse = PayinBankAccount[];
 
 export interface CreatePayinBankAccountRequest {
   payment_method_id: number;
-  note: string;
-  start_time: string;
-  end_time: string;
-  min_amount: number;
-  max_amount: number;
-  receivable_amount: number;
-  daily_receivable_amount: number;
-  credentials: Record<string, unknown>;
   vendor_wallet_id: number;
+  category: string;
+  credentials: Record<string, unknown>;
 }
 
 export interface CreatePayinBankAccountResponse {
