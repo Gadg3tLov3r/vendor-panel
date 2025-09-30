@@ -1,0 +1,715 @@
+import axios from "axios";
+import { API_CONFIG } from "@/config/api";
+import type {
+  TopupsListParams,
+  TopupsListResponse,
+  CreateTopupRequest,
+  CreateTopupResponse,
+  ApproveTopupRequest,
+  RejectTopupRequest,
+  TopupActionResponse,
+  VendorWallet,
+  WalletsListParams,
+  WalletsListResponse,
+  CreateWalletRequest,
+  CreateWalletResponse,
+  WalletDetails,
+  WalletMethodsResponse,
+  CreateWalletMethodRequest,
+  CreateWalletMethodResponse,
+  CurrenciesResponse,
+  VendorsResponse,
+  PayinBankAccount,
+  PayinBankAccountsResponse,
+  CreatePayinBankAccountRequest,
+  CreatePayinBankAccountResponse,
+  PaymentMethodsResponse,
+  PaymentsListParams,
+  PaymentsListResponse,
+} from "@/types/topups";
+import { authService } from "./auth-service";
+
+class TopupsService {
+  private baseURL = API_CONFIG.BASE_URL;
+
+  async getTopupsList(
+    params: TopupsListParams = {}
+  ): Promise<TopupsListResponse> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const queryParams = new URLSearchParams();
+
+      // Add pagination params
+      if (params.page) queryParams.append("page", params.page.toString());
+      if (params.per_page)
+        queryParams.append("per_page", params.per_page.toString());
+
+      // Add filter params
+      if (params.status?.length) {
+        params.status.forEach((status) => queryParams.append("status", status));
+      }
+      if (params.channel?.length) {
+        params.channel.forEach((channel) =>
+          queryParams.append("channel", channel)
+        );
+      }
+
+      const response = await axios.get(
+        `${this.baseURL}${
+          API_CONFIG.ENDPOINTS.ADMIN.TOPUPS_LIST
+        }?${queryParams.toString()}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Handle your API's error format
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch topups";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async createTopup(data: CreateTopupRequest): Promise<CreateTopupResponse> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.post(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.TOPUPS_CREATE}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Handle your API's error format
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to create topup";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async approveTopup(
+    topupId: number,
+    data: ApproveTopupRequest
+  ): Promise<TopupActionResponse> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.post<TopupActionResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.TOPUPS_APPROVE}/${topupId}/approve`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to approve topup";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async rejectTopup(
+    topupId: number,
+    data: RejectTopupRequest
+  ): Promise<TopupActionResponse> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.post<TopupActionResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.TOPUPS_REJECT}/${topupId}/reject`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to reject topup";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getVendorWallets(): Promise<VendorWallet[]> {
+    try {
+      const response = await axios.get<VendorWallet[]>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.VENDOR_WALLETS}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch vendor wallets";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getWallets(
+    params: WalletsListParams = {}
+  ): Promise<WalletsListResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.offset !== undefined) {
+        queryParams.append("offset", params.offset.toString());
+      }
+      if (params.limit !== undefined) {
+        queryParams.append("limit", params.limit.toString());
+      }
+
+      const response = await axios.get<WalletsListResponse>(
+        `${this.baseURL}${
+          API_CONFIG.ENDPOINTS.ADMIN.WALLETS
+        }?${queryParams.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch wallets";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async createWallet(data: CreateWalletRequest): Promise<CreateWalletResponse> {
+    try {
+      const response = await axios.post<CreateWalletResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.WALLETS_CREATE}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to create wallet";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async updateWallet(
+    walletId: number,
+    data: {
+      name: string;
+      is_active: boolean;
+      enable_payment: boolean;
+      enable_disbursement: boolean;
+    }
+  ): Promise<CreateWalletResponse> {
+    try {
+      const response = await axios.patch<CreateWalletResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.WALLETS_UPDATE}/${walletId}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update wallet";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getWalletDetails(walletId: number): Promise<WalletDetails> {
+    try {
+      const response = await axios.get<WalletDetails>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.WALLET_DETAILS}/${walletId}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch wallet details";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getWalletMethods(walletId: number): Promise<WalletMethodsResponse> {
+    try {
+      const response = await axios.get<WalletMethodsResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.WALLET_METHODS}/${walletId}/links`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch wallet methods";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async createWalletMethod(
+    walletId: number,
+    data: CreateWalletMethodRequest
+  ): Promise<CreateWalletMethodResponse> {
+    try {
+      const response = await axios.post<CreateWalletMethodResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.WALLET_METHODS_CREATE}/${walletId}/links`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to create wallet method";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async updateWalletMethod(
+    methodId: number,
+    data: {
+      is_active: boolean;
+      enable_payment: boolean;
+      enable_disbursement: boolean;
+    }
+  ): Promise<CreateWalletMethodResponse> {
+    try {
+      const response = await axios.patch<CreateWalletMethodResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.WALLET_METHODS_UPDATE}/${methodId}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update wallet method";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getCurrencies(): Promise<CurrenciesResponse> {
+    try {
+      const response = await axios.get<CurrenciesResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.COMMON.CURRENCIES}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch currencies";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getVendors(): Promise<VendorsResponse> {
+    try {
+      const response = await axios.get<VendorsResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.VENDORS}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch vendors";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getPayinBankAccounts(): Promise<PayinBankAccountsResponse> {
+    try {
+      const response = await axios.get<PayinBankAccountsResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.PAYIN_BANK_ACCOUNTS}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch payin bank accounts";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async createPayinBankAccount(
+    data: CreatePayinBankAccountRequest
+  ): Promise<CreatePayinBankAccountResponse> {
+    try {
+      const response = await axios.post<CreatePayinBankAccountResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.PAYIN_BANK_ACCOUNTS_CREATE}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to create payin bank account";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getPaymentMethods(): Promise<PaymentMethodsResponse> {
+    try {
+      const response = await axios.get<PaymentMethodsResponse>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.COMMON.PAYMENT_METHODS}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch payment methods";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getPayments(
+    params: PaymentsListParams = {}
+  ): Promise<PaymentsListResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.page) queryParams.append("page", params.page.toString());
+      if (params.page_size)
+        queryParams.append("page_size", params.page_size.toString());
+
+      const response = await axios.get<PaymentsListResponse>(
+        `${this.baseURL}${
+          API_CONFIG.ENDPOINTS.ADMIN.PAYMENTS
+        }?${queryParams.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch payments";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async approvePayinBankAccount(
+    bankAccountId: number
+  ): Promise<PayinBankAccount> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.post<PayinBankAccount>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.PAYIN_BANK_ACCOUNTS_APPROVE}/${bankAccountId}/approve`,
+        {},
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to approve payin bank account";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async activatePayinBankAccount(
+    bankAccountId: number
+  ): Promise<PayinBankAccount> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.post<PayinBankAccount>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.PAYIN_BANK_ACCOUNTS_ACTIVATE}/${bankAccountId}/activate`,
+        {},
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to activate payin bank account";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async deactivatePayinBankAccount(
+    bankAccountId: number
+  ): Promise<PayinBankAccount> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.post<PayinBankAccount>(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.PAYIN_BANK_ACCOUNTS_DEACTIVATE}/${bankAccountId}/deactivate`,
+        {},
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to deactivate payin bank account";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+}
+
+export const topupsService = new TopupsService();

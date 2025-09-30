@@ -1,0 +1,34 @@
+export const API_CONFIG = {
+  BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  ENDPOINTS: {
+    AUTH: {
+      TOKEN: "/auth/token",
+      REFRESH: "/auth/refresh",
+    },
+    ADMIN: {
+      TOPUPS_LIST: "/vendor/topups/list",
+      TOPUPS_CREATE: "/vendor/topups/create",
+      TOPUPS_APPROVE: "/vendor/topups",
+      TOPUPS_REJECT: "/vendor/topups",
+      VENDOR_WALLETS: "/vendor/lookups/vendor-wallets",
+      VENDORS: "/vendor/lookups/vendors",
+      WALLETS: "/vendor/wallets",
+      WALLETS_CREATE: "/vendor/wallets",
+      WALLETS_UPDATE: "/vendor/wallets",
+      WALLET_DETAILS: "/vendor/wallets",
+      WALLET_METHODS: "/vendor/wallets",
+      WALLET_METHODS_CREATE: "/vendor/wallets",
+      WALLET_METHODS_UPDATE: "/vendor/links",
+      PAYIN_BANK_ACCOUNTS: "/vendor/payin-bank-accounts",
+      PAYIN_BANK_ACCOUNTS_CREATE: "/vendor/payin-bank-accounts",
+      PAYIN_BANK_ACCOUNTS_APPROVE: "/vendor/payin-bank-accounts",
+      PAYIN_BANK_ACCOUNTS_ACTIVATE: "/vendor/payin-bank-accounts",
+      PAYIN_BANK_ACCOUNTS_DEACTIVATE: "/vendor/payin-bank-accounts",
+      PAYMENTS: "/vendor/payments",
+    },
+    COMMON: {
+      CURRENCIES: "/common/lookups/currencies",
+      PAYMENT_METHODS: "/common/lookups/payment-methods",
+    },
+  },
+} as const;
