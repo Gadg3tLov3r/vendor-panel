@@ -22,7 +22,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/use-auth";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 export function NavUser({
   user,
@@ -31,14 +33,16 @@ export function NavUser({
     name: string;
     email: string;
     avatar: string;
-    role?: string;
   };
 }) {
   const { isMobile } = useSidebar();
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
+    toast.success("Logged out successfully");
+    navigate("/login");
   };
 
   return (
@@ -52,24 +56,13 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">
-                  {user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()}
-                </AvatarFallback>
+                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="text-muted-foreground truncate text-xs">
                   {user.email}
                 </span>
-                {user.role && (
-                  <span className="text-muted-foreground truncate text-[10px] uppercase tracking-widest">
-                    {user.role}
-                  </span>
-                )}
               </div>
               <IconDotsVertical className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -84,24 +77,13 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">
-                    {user.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()}
-                  </AvatarFallback>
+                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="text-muted-foreground truncate text-xs">
                     {user.email}
                   </span>
-                  {user.role && (
-                    <span className="text-muted-foreground truncate text-[10px] uppercase tracking-widest">
-                      {user.role}
-                    </span>
-                  )}
                 </div>
               </div>
             </DropdownMenuLabel>

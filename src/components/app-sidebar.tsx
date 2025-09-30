@@ -1,27 +1,17 @@
 import * as React from "react";
 import {
-  IconCamera,
-  IconChartBar,
+  IconCashBanknote,
+  IconCoin,
   IconCreditCard,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
-  IconFileDescription,
-  IconFileWord,
-  IconFolder,
   IconHelp,
-  IconInnerShadowTop,
-  IconListDetails,
-  IconReport,
   IconSearch,
   IconSettings,
-  IconUsers,
+  IconUserShield,
   IconWallet,
 } from "@tabler/icons-react";
 
-import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -32,7 +22,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/use-auth";
 
 const data = {
   user: {
@@ -45,86 +35,34 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: IconDashboard,
+      addButton: false,
     },
     {
-      title: "Topup",
-      url: "/topup",
-      icon: IconCreditCard,
+      title: "Topups",
+      url: "/top-ups",
+      icon: IconCoin,
+      addButton: true,
+    },
+    {
+      title: "Bank Accounts",
+      url: "/bank-accounts",
+      icon: IconCashBanknote,
+      addButton: true,
     },
     {
       title: "Wallets",
       url: "/wallets",
       icon: IconWallet,
+      addButton: false,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: IconUsers,
+      title: "Payments",
+      url: "/payments",
+      icon: IconCreditCard,
+      addButton: false,
     },
   ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-  ],
+
   navSecondary: [
     {
       title: "Settings",
@@ -142,44 +80,17 @@ const data = {
       icon: IconSearch,
     },
   ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
-  ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
 
-  // Get authenticated user data or use default
-  const userData = user
-    ? {
-        name: user.username,
-        email: `${user.username}@vendor-panel.com`, // Default email format
-        avatar: "/avatars/brand.jpg",
-        role: user.roles?.[0]?.name || "Vendor",
-      }
-    : {
-        name: isLoading ? "Loading..." : "Guest",
-        email: isLoading
-          ? "loading@vendor-panel.com"
-          : "guest@vendor-panel.com",
-        avatar: "/avatars/brand.jpg",
-        role: isLoading ? "Loading" : "Unknown",
-      };
+  // Create user object for NavUser component
+  const userData = {
+    name: user?.username || "User",
+    email: user?.principal || "vendor",
+    avatar: "/avatars/default.jpg", // You can add a default avatar or use user avatar if available
+  };
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -191,8 +102,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Vendor panel.</span>
+                <IconUserShield className="!size-5" />
+                <span className="text-base font-semibold">Vendor Panel</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -200,8 +111,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

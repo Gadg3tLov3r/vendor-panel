@@ -3,15 +3,22 @@ export interface User {
   username: string;
   principal: string;
   is_superuser: boolean;
-  roles: Role[];
+  roles: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
-export interface Role {
-  id: number;
-  name: string;
+export interface AuthTokens {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+  expires_at?: number; // Added for client-side expiration tracking
+  sid: string;
 }
 
-export interface LoginResponse {
+export interface AuthResponse {
   access_token: string;
   refresh_token: string;
   token_type: string;
@@ -21,24 +28,15 @@ export interface LoginResponse {
   permissions: string[];
 }
 
-export interface LoginRequest {
+export interface LoginCredentials {
+  principal: string;
   username: string;
   password: string;
-  principal: string;
-  rotate_session: boolean;
 }
 
-export interface AuthContextType {
+export interface AuthState {
   user: User | null;
-  tokens: {
-    access_token: string | null;
-    refresh_token: string | null;
-    expires_at: number | null;
-  } | null;
-  permissions: string[];
+  tokens: AuthTokens | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginRequest) => Promise<void>;
-  logout: () => void;
-  refreshToken: () => Promise<void>;
 }
