@@ -244,6 +244,7 @@ export default function CreateBankAccountPage() {
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
+                autoComplete="off"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
@@ -495,12 +496,11 @@ export default function CreateBankAccountPage() {
                           <FormControl>
                             <Input
                               placeholder="Enter account number"
+                              autoComplete="off"
                               {...field}
                             />
                           </FormControl>
-                          <FormDescription>
-                            11-12 digit account number
-                          </FormDescription>
+
                           <FormMessage />
                         </FormItem>
                       )}
@@ -520,6 +520,7 @@ export default function CreateBankAccountPage() {
                               <FormControl>
                                 <Input
                                   placeholder="Enter shop name"
+                                  autoComplete="off"
                                   {...field}
                                 />
                               </FormControl>
@@ -544,6 +545,9 @@ export default function CreateBankAccountPage() {
                                 <FormControl>
                                   <Input
                                     placeholder="Enter username"
+                                    autoComplete="off"
+                                    data-form-type="other"
+                                    data-lpignore="true"
                                     {...field}
                                   />
                                 </FormControl>
@@ -562,6 +566,9 @@ export default function CreateBankAccountPage() {
                                   <Input
                                     type="password"
                                     placeholder="Enter password"
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
                                     {...field}
                                   />
                                 </FormControl>
@@ -579,6 +586,7 @@ export default function CreateBankAccountPage() {
                                 <FormControl>
                                   <Input
                                     placeholder="Enter app secret"
+                                    autoComplete="off"
                                     {...field}
                                   />
                                 </FormControl>
@@ -596,6 +604,7 @@ export default function CreateBankAccountPage() {
                                 <FormControl>
                                   <Input
                                     placeholder="Enter app key"
+                                    autoComplete="off"
                                     {...field}
                                   />
                                 </FormControl>
@@ -621,6 +630,7 @@ export default function CreateBankAccountPage() {
                                 <FormControl>
                                   <Input
                                     placeholder="Enter merchant ID"
+                                    autoComplete="off"
                                     {...field}
                                   />
                                 </FormControl>
@@ -638,6 +648,7 @@ export default function CreateBankAccountPage() {
                                 <FormControl>
                                   <Input
                                     placeholder="Enter public key"
+                                    autoComplete="off"
                                     {...field}
                                   />
                                 </FormControl>
@@ -655,6 +666,7 @@ export default function CreateBankAccountPage() {
                                 <FormControl>
                                   <Input
                                     placeholder="Enter private key"
+                                    autoComplete="off"
                                     {...field}
                                   />
                                 </FormControl>
@@ -679,6 +691,7 @@ export default function CreateBankAccountPage() {
                               <FormControl>
                                 <Input
                                   placeholder="Enter QR code string"
+                                  autoComplete="off"
                                   {...field}
                                 />
                               </FormControl>
