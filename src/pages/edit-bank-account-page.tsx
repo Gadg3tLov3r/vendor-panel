@@ -8,7 +8,6 @@ import type { PayinBankAccount, PaymentMethod } from "@/types/topups";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -30,15 +29,6 @@ import { Link, useNavigate, useParams } from "react-router";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const updatePayinBankAccountSchema = z.object({
-  note: z.string().min(1, "Note is required"),
-  start_time: z.string().min(1, "Start time is required"),
-  end_time: z.string().min(1, "End time is required"),
-  min_amount: z.number().min(0, "Minimum amount must be at least 0"),
-  max_amount: z.number().min(0, "Maximum amount must be at least 0"),
-  receivable_amount: z.number().min(0, "Receivable amount must be at least 0"),
-  daily_receivable_amount: z
-    .number()
-    .min(0, "Daily receivable amount must be at least 0"),
   shop_name: z.string().optional(),
   username: z.string().optional(),
   password: z.string().optional(),
@@ -60,17 +50,11 @@ export default function EditBankAccountPage() {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [bankAccount, setBankAccount] = useState<PayinBankAccount | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [isEditingCredentials, setIsEditingCredentials] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(updatePayinBankAccountSchema),
     defaultValues: {
-      note: "",
-      start_time: "00:00:00.000Z",
-      end_time: "23:59:59.999Z",
-      min_amount: 0,
-      max_amount: 0,
-      receivable_amount: 0,
-      daily_receivable_amount: 0,
       shop_name: "",
       username: "",
       password: "",
@@ -105,14 +89,6 @@ export default function EditBankAccountPage() {
           string
         >;
         form.reset({
-          note: bankAccountData.note || "",
-          start_time: bankAccountData.start_time || "00:00:00.000Z",
-          end_time: bankAccountData.end_time || "23:59:59.999Z",
-          min_amount: parseFloat(bankAccountData.min_amount) || 0,
-          max_amount: parseFloat(bankAccountData.max_amount) || 0,
-          receivable_amount: parseFloat(bankAccountData.receivable_amount) || 0,
-          daily_receivable_amount:
-            parseFloat(bankAccountData.daily_receivable_amount) || 0,
           shop_name: credentials?.shop_name || "",
           username: credentials?.username || "",
           password: credentials?.password || "",
@@ -137,6 +113,21 @@ export default function EditBankAccountPage() {
     };
     fetchData();
   }, [id, navigate, form]);
+
+  const handleEnableCredentialsEdit = () => {
+    setIsEditingCredentials(true);
+    // Clear all credential fields
+    form.setValue("shop_name", "");
+    form.setValue("username", "");
+    form.setValue("password", "");
+    form.setValue("app_secret", "");
+    form.setValue("app_key", "");
+    form.setValue("mid", "");
+    form.setValue("public_key", "");
+    form.setValue("private_key", "");
+    form.setValue("qr_code_str", "");
+    form.setValue("account_no", "");
+  };
 
   const onSubmit = async (data: FormData) => {
     if (!id || !bankAccount) return;
@@ -180,22 +171,15 @@ export default function EditBankAccountPage() {
         }
       }
       await topupsService.updatePayinBankAccount(parseInt(id), {
-        note: data.note,
-        start_time: data.start_time,
-        end_time: data.end_time,
-        min_amount: data.min_amount,
-        max_amount: data.max_amount,
-        receivable_amount: data.receivable_amount,
-        daily_receivable_amount: data.daily_receivable_amount,
         credentials,
       });
-      toast.success("Payin bank account updated successfully!");
+      toast.success("Payin bank account credentials updated successfully!");
       navigate("/bank-accounts");
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to update payin bank account"
+          : "Failed to update payin bank account credentials"
       );
     } finally {
       setLoading(false);
@@ -279,7 +263,7 @@ export default function EditBankAccountPage() {
               Edit Payin Bank Account
             </h1>
             <p className="text-muted-foreground">
-              Update payin bank account details
+              Update payment method credentials
             </p>
           </div>
         </div>
@@ -287,7 +271,7 @@ export default function EditBankAccountPage() {
           <CardHeader>
             <CardTitle>Payin Bank Account Details</CardTitle>
             <CardDescription>
-              Update the details of the payin bank account
+              Update the credentials for the payin bank account
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -324,154 +308,127 @@ export default function EditBankAccountPage() {
                       Vendor wallet cannot be changed
                     </p>
                   </div>
-                  <FormField
-                    control={form.control}
-                    name="start_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Start Time</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Daily start time for this bank account
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="end_time"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>End Time</FormLabel>
-                        <FormControl>
-                          <Input type="time" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Daily end time for this bank account
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="min_amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Minimum Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            min="0"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="max_amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Maximum Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            min="0"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="receivable_amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Receivable Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            min="0"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="daily_receivable_amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Daily Receivable Amount</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder="0.00"
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            min="0"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none">
+                      Start Time
+                    </label>
+                    <Input
+                      type="time"
+                      value={bankAccount.start_time || "00:00:00.000Z"}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      This field cannot be changed
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none">
+                      End Time
+                    </label>
+                    <Input
+                      type="time"
+                      value={bankAccount.end_time || "23:59:59.999Z"}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      This field cannot be changed
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none">
+                      Minimum Amount
+                    </label>
+                    <Input
+                      type="number"
+                      value={bankAccount.min_amount}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      This field cannot be changed
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none">
+                      Maximum Amount
+                    </label>
+                    <Input
+                      type="number"
+                      value={bankAccount.max_amount}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      This field cannot be changed
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none">
+                      Receivable Amount
+                    </label>
+                    <Input
+                      type="number"
+                      value={bankAccount.receivable_amount}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      This field cannot be changed
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none">
+                      Daily Receivable Amount
+                    </label>
+                    <Input
+                      type="number"
+                      value={bankAccount.daily_receivable_amount}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      This field cannot be changed
+                    </p>
+                  </div>
                 </div>
-                <FormField
-                  control={form.control}
-                  name="note"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Note</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter additional notes..."
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Additional information about this payin bank account
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">
-                    Payment Method Credentials
-                  </h3>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none">
+                    Note
+                  </label>
+                  <Textarea
+                    value={bankAccount.note || ""}
+                    disabled
+                    className="bg-muted"
+                    rows={3}
+                  />
                   <p className="text-sm text-muted-foreground">
-                    Update the credential fields for {paymentMethodName}
+                    This field cannot be changed
                   </p>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium">
+                        Payment Method Credentials
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {isEditingCredentials
+                          ? `Enter new credentials for ${paymentMethodName}`
+                          : "Credentials are masked for security"}
+                      </p>
+                    </div>
+                    {!isEditingCredentials && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleEnableCredentialsEdit}
+                      >
+                        Edit Credentials
+                      </Button>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
@@ -483,6 +440,10 @@ export default function EditBankAccountPage() {
                             <Input
                               placeholder="Enter account number"
                               autoComplete="off"
+                              disabled={!isEditingCredentials}
+                              className={
+                                !isEditingCredentials ? "bg-muted" : ""
+                              }
                               {...field}
                             />
                           </FormControl>
@@ -501,6 +462,10 @@ export default function EditBankAccountPage() {
                               <Input
                                 placeholder="Enter shop name"
                                 autoComplete="off"
+                                disabled={!isEditingCredentials}
+                                className={
+                                  !isEditingCredentials ? "bg-muted" : ""
+                                }
                                 {...field}
                               />
                             </FormControl>
@@ -523,6 +488,10 @@ export default function EditBankAccountPage() {
                                   autoComplete="off"
                                   data-form-type="other"
                                   data-lpignore="true"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
                                   {...field}
                                 />
                               </FormControl>
@@ -543,6 +512,10 @@ export default function EditBankAccountPage() {
                                   autoComplete="new-password"
                                   data-form-type="other"
                                   data-lpignore="true"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
                                   {...field}
                                 />
                               </FormControl>
@@ -560,6 +533,10 @@ export default function EditBankAccountPage() {
                                 <Input
                                   placeholder="Enter app secret"
                                   autoComplete="off"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
                                   {...field}
                                 />
                               </FormControl>
@@ -577,6 +554,10 @@ export default function EditBankAccountPage() {
                                 <Input
                                   placeholder="Enter app key"
                                   autoComplete="off"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
                                   {...field}
                                 />
                               </FormControl>
@@ -598,6 +579,10 @@ export default function EditBankAccountPage() {
                                 <Input
                                   placeholder="Enter merchant ID"
                                   autoComplete="off"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
                                   {...field}
                                 />
                               </FormControl>
@@ -615,6 +600,10 @@ export default function EditBankAccountPage() {
                                 <Input
                                   placeholder="Enter public key"
                                   autoComplete="off"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
                                   {...field}
                                 />
                               </FormControl>
@@ -632,6 +621,10 @@ export default function EditBankAccountPage() {
                                 <Input
                                   placeholder="Enter private key"
                                   autoComplete="off"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
                                   {...field}
                                 />
                               </FormControl>
@@ -652,6 +645,10 @@ export default function EditBankAccountPage() {
                               <Input
                                 placeholder="Enter QR code string"
                                 autoComplete="off"
+                                disabled={!isEditingCredentials}
+                                className={
+                                  !isEditingCredentials ? "bg-muted" : ""
+                                }
                                 {...field}
                               />
                             </FormControl>
@@ -663,11 +660,14 @@ export default function EditBankAccountPage() {
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <Button type="submit" disabled={loading}>
+                  <Button
+                    type="submit"
+                    disabled={loading || !isEditingCredentials}
+                  >
                     {loading && (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     )}
-                    {loading ? "Updating..." : "Update Payin Bank Account"}
+                    {loading ? "Updating..." : "Update Credentials"}
                   </Button>
                   <Button type="button" variant="outline" asChild>
                     <Link to="/bank-accounts">Cancel</Link>

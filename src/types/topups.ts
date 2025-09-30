@@ -270,13 +270,13 @@ export interface CreatePayinBankAccountResponse {
 }
 
 export interface UpdatePayinBankAccountRequest {
-  note: string;
-  start_time: string;
-  end_time: string;
-  min_amount: number;
-  max_amount: number;
-  receivable_amount: number;
-  daily_receivable_amount: number;
+  note?: string;
+  start_time?: string;
+  end_time?: string;
+  min_amount?: number;
+  max_amount?: number;
+  receivable_amount?: number;
+  daily_receivable_amount?: number;
   credentials: Record<string, unknown>;
 }
 
