@@ -1,11 +1,5 @@
 import SideBarLayout from "@/components/sidebar-layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +20,7 @@ import type {
   RejectTopupRequest,
 } from "@/types/topups";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { Link } from "react-router";
 import {
   Dialog,
@@ -238,19 +232,26 @@ export default function TopupsPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Error</CardTitle>
-              <CardDescription>Failed to load topups data</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-destructive">{error}</p>
-              <Button
-                onClick={() => fetchTopups()}
-                className="mt-4"
-                variant="outline"
-              >
-                Retry
-              </Button>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-lg font-semibold text-destructive">
+                    Error
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Failed to load topups data
+                  </p>
+                  <p className="text-sm text-destructive mt-2">{error}</p>
+                </div>
+                <Button
+                  onClick={() => fetchTopups()}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Retry
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -276,16 +277,9 @@ export default function TopupsPage() {
           </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Topups List</CardTitle>
-            <CardDescription>
-              Showing {pagination.total} topups (Page {pagination.page} of{" "}
-              {pagination.total_pages})
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
+        {loading ? (
+          <Card>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />
@@ -293,85 +287,64 @@ export default function TopupsPage() {
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />
               </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Vendor Wallet</TableHead>
-                    <TableHead>Channel</TableHead>
-                    <TableHead>Requested Amount</TableHead>
-                    <TableHead>Paid Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Channel Note</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead>Actions</TableHead>
+            </CardContent>
+          </Card>
+        ) : topups.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No topups found</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Vendor Wallet</TableHead>
+                  <TableHead>Channel</TableHead>
+                  <TableHead>Requested Amount</TableHead>
+                  <TableHead>Paid Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Note</TableHead>
+                  <TableHead>Created At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topups.map((topup) => (
+                  <TableRow key={topup.id}>
+                    <TableCell className="font-medium">
+                      {getVendorWalletName(topup.vendor_wallet_id)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getChannelBadgeVariant(topup.channel)}>
+                        {topup.channel}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {formatCurrency(topup.requested_amount)}
+                    </TableCell>
+                    <TableCell>
+                      {topup.paid_amount
+                        ? formatCurrency(topup.paid_amount)
+                        : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(topup.status)}>
+                        {topup.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {topup.channel_note || "—"}
+                    </TableCell>
+                    <TableCell>{formatDate(topup.created_at)}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {topups.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8">
-                        <p className="text-muted-foreground">No topups found</p>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    topups.map((topup) => (
-                      <TableRow key={topup.id}>
-                        <TableCell className="font-medium">
-                          {getVendorWalletName(topup.vendor_wallet_id)}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={getChannelBadgeVariant(topup.channel)}
-                          >
-                            {topup.channel}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(topup.requested_amount)}
-                        </TableCell>
-                        <TableCell>
-                          {topup.paid_amount
-                            ? formatCurrency(topup.paid_amount)
-                            : "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={getStatusBadgeVariant(topup.status)}>
-                            {topup.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {topup.channel_note || "—"}
-                        </TableCell>
-                        <TableCell>{formatDate(topup.created_at)}</TableCell>
-                        {/* <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleApprove(topup)}
-                              disabled={topup.status !== "PENDING"}
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleReject(topup)}
-                              disabled={topup.status !== "PENDING"}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell> */}
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         {/* Approve Dialog */}
         <Dialog

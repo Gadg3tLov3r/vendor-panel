@@ -3,13 +3,7 @@ import { toast } from "sonner";
 import { topupsService } from "@/services/topups-service";
 import type { PayinBankAccount } from "@/types/topups";
 import SideBarLayout from "@/components/sidebar-layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -114,7 +108,8 @@ export default function BankAccountsPage() {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "BDT",
-      minimumFractionDigits: 3,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(numAmount);
   };
 
@@ -134,13 +129,7 @@ export default function BankAccountsPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Payin Bank Accounts List</CardTitle>
-              <CardDescription>
-                Loading bank account information...
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="flex items-center space-x-4">
@@ -175,18 +164,22 @@ export default function BankAccountsPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Error Loading Bank Accounts</CardTitle>
-              <CardDescription>{error}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={fetchBankAccounts}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Try Again
-              </Button>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-lg font-semibold text-destructive">
+                    Error Loading Bank Accounts
+                  </p>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+                <Button
+                  onClick={fetchBankAccounts}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -225,99 +218,128 @@ export default function BankAccountsPage() {
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payin Bank Accounts List</CardTitle>
-            <CardDescription>
-              View all payin bank accounts and their current status
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {bankAccounts.length === 0 ? (
+        {bankAccounts.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
                   No payin bank accounts found
                 </p>
               </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Vendor Wallet</TableHead>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Active Hold Amount</TableHead>
-                      <TableHead>Note</TableHead>
-                      <TableHead>Min Amount</TableHead>
-                      <TableHead>Max Amount</TableHead>
-                      <TableHead>Received Amount</TableHead>
-                      <TableHead>Approve</TableHead>
-                      <TableHead>Activate</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {bankAccounts.map((account) => (
-                      <TableRow key={account.id}>
-                        <TableCell className="font-medium">
-                          {account.vendor_wallet_name}
-                        </TableCell>
-                        <TableCell>{account.payment_method_name}</TableCell>
-                        <TableCell>{account.category || "—"}</TableCell>
-                        <TableCell>
-                          {formatCurrency(account.active_hold_amount)}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {account.note || "—"}
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(account.min_amount)}
-                        </TableCell>
-                        <TableCell>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead className="h-20">
+                    <div className="flex flex-col gap-0.5">
+                      <span>Vendor Wallet</span>
+                      <span>Payment Method</span>
+                    </div>
+                  </TableHead>
+                  <TableHead className="h-20">Category</TableHead>
+                  <TableHead className="h-20">
+                    <div className="flex flex-col gap-0.5">
+                      <span>Min Amount</span>
+                      <span>Max Amount</span>
+                    </div>
+                  </TableHead>
+                  <TableHead className="h-20">Hold</TableHead>
+                  <TableHead className="h-20">
+                    <div className="flex flex-col gap-0.5">
+                      <span>Daily Receivable</span>
+                      <span>Monthy Receivable</span>
+                    </div>
+                  </TableHead>
+                  <TableHead className="h-20">
+                    <div className="flex flex-col gap-0.5">
+                      <span>Daily Received</span>
+                      <span>Monthly Received</span>
+                    </div>
+                  </TableHead>
+                  <TableHead className="h-20">Note</TableHead>
+                  <TableHead className="h-20">Approve</TableHead>
+                  <TableHead className="h-20">Activate</TableHead>
+                  <TableHead className="h-20">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {bankAccounts.map((account) => (
+                  <TableRow key={account.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex flex-col">
+                        <span>{account.vendor_wallet_name}</span>
+                        <span className="text-sm">
+                          {account.payment_method_name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{account.category || "—"}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span>{formatCurrency(account.min_amount)}</span>
+                        <span className="text-sm">
                           {formatCurrency(account.max_amount)}
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(account.received_amount)}
-                        </TableCell>
-                        <TableCell>
-                          <Switch
-                            checked={account.is_approved}
-                            onCheckedChange={() =>
-                              handleApprove(account.id, account.is_approved)
-                            }
-                            disabled={
-                              account.is_approved || approving === account.id
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Switch
-                            checked={account.is_active}
-                            onCheckedChange={() =>
-                              handleActivateToggle(
-                                account.id,
-                                account.is_active
-                              )
-                            }
-                            disabled={activating === account.id}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link to={`/bank-accounts/${account.id}/edit`}>
-                              <Edit className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {formatCurrency(account.active_hold_amount)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm">
+                          {formatCurrency(account.daily_receivable_amount)}
+                        </span>
+                        <span>{formatCurrency(account.receivable_amount)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-sm">
+                          {formatCurrency(account.daily_received_amount)}
+                        </span>
+                        <span>{formatCurrency(account.received_amount)}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {account.note || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={account.is_approved}
+                        onCheckedChange={() =>
+                          handleApprove(account.id, account.is_approved)
+                        }
+                        disabled={
+                          account.is_approved || approving === account.id
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Switch
+                        checked={account.is_active}
+                        onCheckedChange={() =>
+                          handleActivateToggle(account.id, account.is_active)
+                        }
+                        disabled={activating === account.id}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/bank-accounts/${account.id}/edit`}>
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
     </SideBarLayout>
   );

@@ -35,10 +35,10 @@ import {
 } from "@/components/ui/form";
 
 const createTopupSchema = z.object({
-  vendor_wallet_id: z.number().min(1, "Vendor Wallet ID must be at least 1"),
-  channel: z.enum(["CASH", "BANK", "CRYPTO"]),
+  vendor_wallet_id: z.number().min(1, "Vendor Wallet is required"),
+  channel: z.enum(["CASH", "BANK", "CRYPTO", "CASHOUT"]),
   requested_amount: z.number().min(0.01, "Amount must be greater than 0"),
-  channel_note: z.string().min(1, "Channel note is required"),
+  channel_note: z.string().optional(),
 });
 
 type FormData = z.infer<typeof createTopupSchema>;
@@ -53,7 +53,7 @@ export default function CreateTopupPage() {
     resolver: zodResolver(createTopupSchema),
     defaultValues: {
       vendor_wallet_id: 0,
-      channel: "CASH",
+      channel: "CASHOUT",
       requested_amount: 0,
       channel_note: "",
     },
@@ -192,6 +192,7 @@ export default function CreateTopupPage() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="CASHOUT">Cashout</SelectItem>
                               <SelectItem value="CASH">Cash</SelectItem>
                               <SelectItem value="BANK">Bank</SelectItem>
                               <SelectItem value="CRYPTO">Crypto</SelectItem>
@@ -231,7 +232,7 @@ export default function CreateTopupPage() {
                     name="channel_note"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Channel Note</FormLabel>
+                        <FormLabel>Note</FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="Enter additional notes about this topup..."

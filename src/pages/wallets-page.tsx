@@ -4,13 +4,7 @@ import { toast } from "sonner";
 import { topupsService } from "@/services/topups-service";
 import type { Wallet } from "@/types/topups";
 import SideBarLayout from "@/components/sidebar-layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -118,11 +112,7 @@ export default function WalletsPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Wallets List</CardTitle>
-              <CardDescription>Loading wallet information...</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="flex items-center space-x-4">
@@ -155,18 +145,22 @@ export default function WalletsPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Error Loading Wallets</CardTitle>
-              <CardDescription>{error}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={fetchWallets}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Try Again
-              </Button>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-lg font-semibold text-destructive">
+                    Error Loading Wallets
+                  </p>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+                <Button
+                  onClick={fetchWallets}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -202,116 +196,102 @@ export default function WalletsPage() {
           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Wallets List</CardTitle>
-            <CardDescription>
-              View all wallets and their current status
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {wallets.length === 0 ? (
+        {wallets.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No wallets found</p>
               </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Vendor</TableHead>
-                      <TableHead>Balance</TableHead>
-                      <TableHead>Active Hold</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Payment</TableHead>
-                      <TableHead>Disbursement</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {wallets.map((wallet) => (
-                      <TableRow key={wallet.id}>
-                        <TableCell className="font-medium">
-                          {wallet.name}
-                        </TableCell>
-                        <TableCell>{wallet.vendor_name}</TableCell>
-                        <TableCell>
-                          {formatCurrency(wallet.balance, wallet.currency_name)}
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(
-                            wallet.active_hold_amount,
-                            wallet.currency_name
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={wallet.is_active}
-                              onCheckedChange={(checked) =>
-                                updateWallet(wallet.id, "is_active", checked)
-                              }
-                              disabled={updatingWallets.has(wallet.id)}
-                            />
-                            <span className="text-sm text-muted-foreground">
-                              {wallet.is_active ? "Active" : "Inactive"}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={wallet.enable_payment}
-                              onCheckedChange={(checked) =>
-                                updateWallet(
-                                  wallet.id,
-                                  "enable_payment",
-                                  checked
-                                )
-                              }
-                              disabled={updatingWallets.has(wallet.id)}
-                            />
-                            <span className="text-sm text-muted-foreground">
-                              {wallet.enable_payment ? "Enabled" : "Disabled"}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={wallet.enable_disbursement}
-                              onCheckedChange={(checked) =>
-                                updateWallet(
-                                  wallet.id,
-                                  "enable_disbursement",
-                                  checked
-                                )
-                              }
-                              disabled={updatingWallets.has(wallet.id)}
-                            />
-                            <span className="text-sm text-muted-foreground">
-                              {wallet.enable_disbursement
-                                ? "Enabled"
-                                : "Disabled"}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Button size="sm" variant="outline" asChild>
-                            <Link to={`/wallets/${wallet.id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Vendor</TableHead>
+                  <TableHead>Balance</TableHead>
+                  <TableHead>Active Hold</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Payment</TableHead>
+                  <TableHead>Disbursement</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {wallets.map((wallet) => (
+                  <TableRow key={wallet.id}>
+                    <TableCell className="font-medium">{wallet.name}</TableCell>
+                    <TableCell>{wallet.vendor_name}</TableCell>
+                    <TableCell>
+                      {formatCurrency(wallet.balance, wallet.currency_name)}
+                    </TableCell>
+                    <TableCell>
+                      {formatCurrency(
+                        wallet.active_hold_amount,
+                        wallet.currency_name
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={wallet.is_active}
+                          onCheckedChange={(checked) =>
+                            updateWallet(wallet.id, "is_active", checked)
+                          }
+                          disabled={updatingWallets.has(wallet.id)}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {wallet.is_active ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={wallet.enable_payment}
+                          onCheckedChange={(checked) =>
+                            updateWallet(wallet.id, "enable_payment", checked)
+                          }
+                          disabled={updatingWallets.has(wallet.id)}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {wallet.enable_payment ? "Enabled" : "Disabled"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={wallet.enable_disbursement}
+                          onCheckedChange={(checked) =>
+                            updateWallet(
+                              wallet.id,
+                              "enable_disbursement",
+                              checked
+                            )
+                          }
+                          disabled={updatingWallets.has(wallet.id)}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {wallet.enable_disbursement ? "Enabled" : "Disabled"}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to={`/wallets/${wallet.id}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
     </SideBarLayout>
   );

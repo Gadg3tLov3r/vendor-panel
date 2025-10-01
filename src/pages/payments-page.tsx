@@ -3,13 +3,7 @@ import { toast } from "sonner";
 import { topupsService } from "@/services/topups-service";
 import type { Payment } from "@/types/topups";
 import SideBarLayout from "@/components/sidebar-layout";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -162,11 +156,7 @@ export default function PaymentsPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Payments List</CardTitle>
-              <CardDescription>Loading payment information...</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="flex items-center space-x-4">
@@ -199,18 +189,22 @@ export default function PaymentsPage() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Error Loading Payments</CardTitle>
-              <CardDescription>{error}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={fetchPayments}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Try Again
-              </Button>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-lg font-semibold text-destructive">
+                    Error Loading Payments
+                  </p>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+                <Button
+                  onClick={fetchPayments}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -238,150 +232,139 @@ export default function PaymentsPage() {
           </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Payments List</CardTitle>
-            <CardDescription>
-              View all payment transactions and their current status
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {payments.length === 0 ? (
+        {payments.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No payments found</p>
               </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Order ID</TableHead>
-                      <TableHead>Vendor</TableHead>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Order Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Paid Amount</TableHead>
-                      <TableHead>Commission</TableHead>
-                      <TableHead>
-                        <div className="flex flex-col">
-                          <span>Balance</span>
-                          <span className="text-xs text-muted-foreground">
-                            Updated
-                          </span>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Order ID</TableHead>
+                  <TableHead>Vendor</TableHead>
+                  <TableHead>Payment Method</TableHead>
+                  <TableHead>Order Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Paid Amount</TableHead>
+                  <TableHead>Commission</TableHead>
+                  <TableHead>
+                    <div className="flex flex-col">
+                      <span>Balance</span>
+                      <span className="text-xs text-muted-foreground">
+                        Updated
+                      </span>
+                    </div>
+                  </TableHead>
+                  <TableHead>Bank Hold</TableHead>
+                  <TableHead>Wallet Hold</TableHead>
+                  <TableHead>Created At</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payments.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell className="font-mono text-sm font-medium">
+                      {payment.order_id}
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-medium">{payment.vendor_name}</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {payment.payment_method_name}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {formatCurrencyOrDash(payment.order_amount)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const statusInfo = getOrderStatusInfo(
+                            payment.order_status
+                          );
+                          const IconComponent = statusInfo.icon;
+                          return (
+                            <div
+                              className={`flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-medium ${statusInfo.bgColor} ${statusInfo.borderColor}`}
+                            >
+                              <IconComponent
+                                className={`h-3 w-3 ${statusInfo.color}`}
+                              />
+                              <span className={statusInfo.color}>
+                                {payment.order_status}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {formatCurrencyOrDash(payment.paid_amount)}
+                    </TableCell>
+                    <TableCell>
+                      {formatCurrencyOrDash(payment.commission_total)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center">
+                        {payment.balance_updated ? (
+                          <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        ) : (
+                          <X className="h-5 w-5 text-red-600 dark:text-red-400" />
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {hasHold(payment.bank_hold_amount) ? (
+                        <div className="flex flex-col space-y-1">
+                          <div className="text-sm font-medium">
+                            {formatCurrencyOrDash(payment.bank_hold_amount)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            TTL: {formatHoldTime(payment.bank_hold_ttl_ms)}
+                          </div>
                         </div>
-                      </TableHead>
-                      <TableHead>Bank Hold</TableHead>
-                      <TableHead>Wallet Hold</TableHead>
-                      <TableHead>Created At</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {payments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-mono text-sm font-medium">
-                          {payment.order_id}
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-medium">
-                            {payment.vendor_name}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {payment.payment_method_name}
-                            </span>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {hasHold(payment.wallet_hold_amount) ? (
+                        <div className="flex flex-col space-y-1">
+                          <div className="text-sm font-medium">
+                            {formatCurrencyOrDash(payment.wallet_hold_amount)}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrencyOrDash(payment.order_amount)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {(() => {
-                              const statusInfo = getOrderStatusInfo(
-                                payment.order_status
-                              );
-                              const IconComponent = statusInfo.icon;
-                              return (
-                                <div
-                                  className={`flex items-center gap-1 px-2 py-0.5 rounded-md border text-xs font-medium ${statusInfo.bgColor} ${statusInfo.borderColor}`}
-                                >
-                                  <IconComponent
-                                    className={`h-3 w-3 ${statusInfo.color}`}
-                                  />
-                                  <span className={statusInfo.color}>
-                                    {payment.order_status}
-                                  </span>
-                                </div>
-                              );
-                            })()}
+                          <div className="text-xs text-muted-foreground">
+                            TTL: {formatHoldTime(payment.wallet_hold_ttl_ms)}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrencyOrDash(payment.paid_amount)}
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrencyOrDash(payment.commission_total)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-center">
-                            {payment.balance_updated ? (
-                              <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
-                            ) : (
-                              <X className="h-5 w-5 text-red-600 dark:text-red-400" />
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {hasHold(payment.bank_hold_amount) ? (
-                            <div className="flex flex-col space-y-1">
-                              <div className="text-sm font-medium">
-                                {formatCurrencyOrDash(payment.bank_hold_amount)}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                TTL: {formatHoldTime(payment.bank_hold_ttl_ms)}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {hasHold(payment.wallet_hold_amount) ? (
-                            <div className="flex flex-col space-y-1">
-                              <div className="text-sm font-medium">
-                                {formatCurrencyOrDash(
-                                  payment.wallet_hold_amount
-                                )}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                TTL:{" "}
-                                {formatHoldTime(payment.wallet_hold_ttl_ms)}
-                              </div>
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <div className="text-sm font-medium">
-                              {formatDate(payment.created_at).date}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {formatDate(payment.created_at).time}
-                            </div>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <div className="text-sm font-medium">
+                          {formatDate(payment.created_at).date}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDate(payment.created_at).time}
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         {/* Pagination */}
         {total > pageSize && (

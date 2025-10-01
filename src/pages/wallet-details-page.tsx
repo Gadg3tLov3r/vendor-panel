@@ -46,7 +46,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, RefreshCw, Plus } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 
 export default function WalletDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -354,7 +354,6 @@ export default function WalletDetailsPage() {
               <h1 className="text-3xl font-bold tracking-tight">
                 {wallet.name}
               </h1>
-              <p className="text-muted-foreground">Wallet ID: {wallet.id}</p>
             </div>
           </div>
           <Button
@@ -374,6 +373,14 @@ export default function WalletDetailsPage() {
               <CardDescription>Wallet configuration and status</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Vendor Name</span>
+                <span className="text-sm">{wallet.vendor_name}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Currency Name</span>
+                <span className="text-sm">{wallet.currency_name}</span>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Status</span>
                 <Badge variant={wallet.is_active ? "default" : "secondary"}>
@@ -410,18 +417,6 @@ export default function WalletDetailsPage() {
                   {wallet.can_balance_go_negative ? "Yes" : "No"}
                 </Badge>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Vendor ID</span>
-                <span className="text-sm text-muted-foreground">
-                  {wallet.vendor_id}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Currency ID</span>
-                <span className="text-sm text-muted-foreground">
-                  {wallet.currency_id}
-                </span>
-              </div>
             </CardContent>
           </Card>
 
@@ -433,6 +428,18 @@ export default function WalletDetailsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex justify-between items-center pb-2 border-b">
+                <span className="text-base font-semibold">Balance</span>
+                <span className="text-2xl font-bold">
+                  {formatCurrencyOrDash(wallet.balance)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">Active Hold Amount</span>
+                <span className="text-sm font-mono">
+                  {formatCurrencyOrDash(wallet.active_hold_amount)}
+                </span>
+              </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">Total Payment</span>
                 <span className="text-sm font-mono">
@@ -503,10 +510,10 @@ export default function WalletDetailsPage() {
                 onOpenChange={setCreateDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button size="sm">
+                  {/* <Button size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Method
-                  </Button>
+                  </Button> */}
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                   <DialogHeader className="pb-4">
@@ -885,15 +892,15 @@ export default function WalletDetailsPage() {
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-muted/50 hover:bg-muted/50">
                       <TableHead>Payment Method</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Payment</TableHead>
                       <TableHead>Disbursement</TableHead>
-                      <TableHead>Min Payment</TableHead>
-                      <TableHead>Max Payment</TableHead>
-                      <TableHead>Min Disbursement</TableHead>
-                      <TableHead>Max Disbursement</TableHead>
+                      <TableHead>Payment Commission %</TableHead>
+                      <TableHead>Payment Commission Fixed</TableHead>
+                      <TableHead>Settlement Commission %</TableHead>
+                      <TableHead>Topup Commission %</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -959,16 +966,18 @@ export default function WalletDetailsPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {formatCurrencyOrDash(method.min_payment_amount)}
+                          {method.payment_commission_rate_percent}%
                         </TableCell>
                         <TableCell>
-                          {formatCurrencyOrDash(method.max_payment_amount)}
+                          {formatCurrencyOrDash(
+                            method.payment_commission_rate_fixed
+                          )}
                         </TableCell>
                         <TableCell>
-                          {formatCurrencyOrDash(method.min_disbursement_amount)}
+                          {method.settlement_commission_rate_percent}%
                         </TableCell>
                         <TableCell>
-                          {formatCurrencyOrDash(method.max_disbursement_amount)}
+                          {method.topup_commission_rate_percent}%
                         </TableCell>
                       </TableRow>
                     ))}
