@@ -34,7 +34,7 @@ export interface CreateTopupRequest {
   vendor_wallet_id: number;
   channel: "CASH" | "BANK" | "CRYPTO" | "CASHOUT";
   requested_amount: number;
-  channel_note: string;
+  channel_note?: string;
   idempotency_key: string;
 }
 
