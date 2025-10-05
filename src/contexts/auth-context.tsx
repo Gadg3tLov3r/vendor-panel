@@ -11,6 +11,7 @@ import { authService } from "@/services/auth-service";
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
+  logoutAll: () => Promise<void>;
   refreshAuthTokens: () => Promise<void>;
 }
 
@@ -112,6 +113,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user");
   };
 
+  const logoutAll = async () => {
+    try {
+      await authService.logoutAll();
+      // After successful logout from all devices, also logout locally
+      logout();
+    } catch (error) {
+      // Even if the API call fails, we should still logout locally
+      // as the user intended to logout
+      logout();
+      throw error;
+    }
+  };
+
   const refreshAuthTokens = useCallback(async () => {
     try {
       const response = await authService.refreshToken();
@@ -191,7 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, login, logout, refreshAuthTokens }}
+      value={{ ...state, login, logout, logoutAll, refreshAuthTokens }}
     >
       {children}
     </AuthContext.Provider>

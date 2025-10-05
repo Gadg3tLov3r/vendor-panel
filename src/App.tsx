@@ -14,6 +14,8 @@ import CreateBankAccountPage from "./pages/create-bank-account-page";
 import EditBankAccountPage from "./pages/edit-bank-account-page";
 import CreateWalletPage from "./pages/create-wallet-page";
 import WalletDetailsPage from "./pages/wallet-details-page";
+import ChangePasswordPage from "./pages/change-password-page";
+
 import { Route, Routes, Navigate } from "react-router";
 
 export default function App() {
@@ -100,6 +102,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <CreateWalletPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/change-password"
+              element={
+                <ProtectedRoute>
+                  <ChangePasswordPage />
                 </ProtectedRoute>
               }
             />

@@ -4,6 +4,8 @@ export const API_CONFIG = {
     AUTH: {
       TOKEN: "/auth/token",
       REFRESH: "/auth/refresh",
+      CHANGE_PASSWORD: "/auth/change-password",
+      LOGOUT_ALL: "/auth/logout-all",
     },
     ADMIN: {
       TOPUPS_LIST: "/vendor/topups/list",

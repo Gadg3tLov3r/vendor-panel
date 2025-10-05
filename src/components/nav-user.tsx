@@ -1,9 +1,15 @@
-import { IconDotsVertical, IconLogout } from "@tabler/icons-react";
+import {
+  IconDotsVertical,
+  IconKey,
+  IconLogout,
+  IconLogout2,
+} from "@tabler/icons-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -29,13 +35,27 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const { logout } = useAuth();
+  const { logout, logoutAll } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     toast.success("Logged out successfully");
     navigate("/login");
+  };
+
+  const handleLogoutAll = async () => {
+    try {
+      await logoutAll();
+      toast.success("Logged out from all devices successfully");
+      navigate("/login");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to logout from all devices"
+      );
+    }
   };
 
   return (
@@ -81,24 +101,20 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => navigate("/change-password")}>
+                <IconKey />
+                Change Password
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconNotification />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup> */}
-            {/* <DropdownMenuSeparator /> */}
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
               <IconLogout />
               Log out
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogoutAll}>
+              <IconLogout2 />
+              Log out from all devices
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

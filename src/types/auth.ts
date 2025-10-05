@@ -34,6 +34,24 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+  logout_everywhere: boolean;
+  issue_new_tokens: boolean;
+}
+
+export interface ChangePasswordResponse {
+  ok: boolean;
+  rotated: boolean;
+  issued_tokens: AuthResponse;
+}
+
+export interface LogoutAllResponse {
+  ok: boolean;
+  message?: string;
+}
+
 export interface AuthState {
   user: User | null;
   tokens: AuthTokens | null;

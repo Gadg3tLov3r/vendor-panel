@@ -1,6 +1,12 @@
 import axios from "axios";
 import { API_CONFIG } from "@/config/api";
-import { type AuthResponse, type LoginCredentials } from "@/types/auth";
+import {
+  type AuthResponse,
+  type LoginCredentials,
+  type ChangePasswordRequest,
+  type ChangePasswordResponse,
+  type LogoutAllResponse,
+} from "@/types/auth";
 
 class AuthService {
   private baseURL = API_CONFIG.BASE_URL;
@@ -78,6 +84,77 @@ class AuthService {
         throw new Error(message);
       }
       throw new Error("An unexpected error occurred during token refresh");
+    }
+  }
+  // Method to change password
+  async changePassword(
+    request: ChangePasswordRequest
+  ): Promise<ChangePasswordResponse> {
+    const accessToken = this.getAccessToken();
+    if (!accessToken) {
+      throw new Error("No access token available");
+    }
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.AUTH.CHANGE_PASSWORD}`,
+        request,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Password change failed";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred during password change");
+    }
+  }
+
+  // Method to logout from all devices
+  async logoutAll(): Promise<LogoutAllResponse> {
+    const accessToken = this.getAccessToken();
+    if (!accessToken) {
+      throw new Error("No access token available");
+    }
+
+    try {
+      const response = await axios.post(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.AUTH.LOGOUT_ALL}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Logout from all devices failed";
+        throw new Error(message);
+      }
+      throw new Error(
+        "An unexpected error occurred during logout from all devices"
+      );
     }
   }
 }
