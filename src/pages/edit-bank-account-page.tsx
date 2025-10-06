@@ -29,16 +29,16 @@ import { Link, useNavigate, useParams } from "react-router";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const updatePayinBankAccountSchema = z.object({
-  shop_name: z.string().optional(),
-  username: z.string().optional(),
-  password: z.string().optional(),
-  app_secret: z.string().optional(),
-  app_key: z.string().optional(),
-  mid: z.string().optional(),
-  public_key: z.string().optional(),
-  private_key: z.string().optional(),
-  qr_code_str: z.string().optional(),
-  account_no: z.string().optional(),
+  shop_name: z.string().min(1, "Shop name is required"),
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+  app_secret: z.string().min(1, "App secret is required"),
+  app_key: z.string().min(1, "App key is required"),
+  mid: z.string().min(1, "Merchant ID is required"),
+  public_key: z.string().min(1, "Public key is required"),
+  private_key: z.string().min(1, "Private key is required"),
+  qr_code_str: z.string().min(1, "QR code string is required"),
+  account_no: z.string().min(1, "Account number is required"),
 });
 
 type FormData = z.infer<typeof updatePayinBankAccountSchema>;
