@@ -5,7 +5,6 @@ import {
   IconCoin,
   IconCreditCard,
   IconDashboard,
-  IconDice3,
   IconHelp,
   IconSearch,
   IconSettings,
@@ -103,8 +102,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <IconDice3 />
-                <span className="text-base font-semibold">Multipayz</span>
+                <img
+                  src="/logo-sidebar.png"
+                  alt="Multipayz"
+                  className="h-8 w-auto"
+                />
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

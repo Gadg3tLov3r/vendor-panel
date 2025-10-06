@@ -93,6 +93,11 @@ export function VendorRegistrationForm({
         {...props}
       >
         <div className="flex flex-col items-center gap-2 text-center">
+          <img
+            src="/logo.png"
+            alt="Multipayz Logo"
+            className="w-32 h-auto mb-4"
+          />
           <h1 className="text-2xl font-bold">Vendor Registration</h1>
           <p className="text-muted-foreground text-sm text-balance">
             Create your vendor account to start using the platform

@@ -55,6 +55,11 @@ export function LoginForm({
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
+        <img
+          src="/logo.png"
+          alt="Multipayz Logo"
+          className="w-32 h-auto mb-4"
+        />
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
           Enter your credentials below to login to your account
