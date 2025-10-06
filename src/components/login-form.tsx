@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { IconBrandTelegram } from "@tabler/icons-react";
 
 export function LoginForm({
   className,
@@ -99,6 +100,17 @@ export function LoginForm({
             Register here
           </button>
         </p>
+        <div className="mt-4 pt-4 border-t">
+          <a
+            href="https://t.me/multipayz"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+          >
+            <IconBrandTelegram className="w-5 h-5" />
+            <span>@multipayz</span>
+          </a>
+        </div>
       </div>
     </form>
   );

@@ -1,5 +1,6 @@
 import * as React from "react";
 import {
+  IconBrandTelegram,
   IconCashBanknote,
   IconCoin,
   IconCreditCard,
@@ -113,6 +114,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <a
+                href="https://t.me/multipayz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2"
+              >
+                <IconBrandTelegram className="w-4 h-4" />
+                <span>@multipayz</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
