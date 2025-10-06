@@ -58,7 +58,7 @@ export interface VendorRegistrationRequest {
   email: string;
   password: string;
   confirm_password: string;
-  refferal_code: string;
+  refferal_code?: string;
 }
 
 export interface VendorRegistrationResponse {
