@@ -52,6 +52,21 @@ export interface LogoutAllResponse {
   message?: string;
 }
 
+export interface VendorRegistrationRequest {
+  vendor_name: string;
+  username: string;
+  email: string;
+  password: string;
+  confirm_password: string;
+  refferal_code: string;
+}
+
+export interface VendorRegistrationResponse {
+  message: string;
+  vendor_id?: number;
+  success: boolean;
+}
+
 export interface AuthState {
   user: User | null;
   tokens: AuthTokens | null;

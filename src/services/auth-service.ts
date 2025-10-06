@@ -6,6 +6,8 @@ import {
   type ChangePasswordRequest,
   type ChangePasswordResponse,
   type LogoutAllResponse,
+  type VendorRegistrationRequest,
+  type VendorRegistrationResponse,
 } from "@/types/auth";
 
 class AuthService {
@@ -154,6 +156,51 @@ class AuthService {
       }
       throw new Error(
         "An unexpected error occurred during logout from all devices"
+      );
+    }
+  }
+
+  // Method to register a new vendor
+  async registerVendor(
+    registrationData: VendorRegistrationRequest
+  ): Promise<VendorRegistrationResponse> {
+    try {
+      const response = await axios.post(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.AUTH.VENDOR_REGISTRATION}`,
+        registrationData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Handle validation errors from the API
+        if (
+          error.response?.data?.detail &&
+          Array.isArray(error.response.data.detail)
+        ) {
+          const validationErrors = error.response.data.detail;
+          const errorMessages = validationErrors
+            .map((err: any) => err.msg)
+            .join(", ");
+          throw new Error(errorMessages);
+        }
+
+        // Handle other API errors
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Vendor registration failed";
+        throw new Error(message);
+      }
+      throw new Error(
+        "An unexpected error occurred during vendor registration"
       );
     }
   }

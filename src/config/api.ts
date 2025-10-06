@@ -6,6 +6,7 @@ export const API_CONFIG = {
       REFRESH: "/auth/refresh",
       CHANGE_PASSWORD: "/auth/change-password",
       LOGOUT_ALL: "/auth/logout-all",
+      VENDOR_REGISTRATION: "/auth/vendor-registration",
     },
     ADMIN: {
       TOPUPS_LIST: "/vendor/topups/list",

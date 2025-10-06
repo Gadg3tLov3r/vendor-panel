@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/protected-route";
 import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter } from "react-router";
 import LoginPage from "./pages/login-page";
+import VendorRegistrationPage from "./pages/vendor-registration-page";
 import DashboardPage from "./pages/dashboard-page";
 import TopupsPage from "./pages/topups-page";
 import BankAccountsPage from "./pages/bank-accounts-page";
@@ -25,6 +26,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<VendorRegistrationPage />} />
             <Route
               path="/dashboard"
               element={

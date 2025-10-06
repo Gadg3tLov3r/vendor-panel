@@ -92,6 +92,16 @@ export function LoginForm({
         <p className="text-muted-foreground">
           Use the credentials provided by your administrator
         </p>
+        <p className="text-muted-foreground mt-2">
+          Don't have an account?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/register")}
+            className="text-primary hover:underline"
+          >
+            Register here
+          </button>
+        </p>
       </div>
     </form>
   );
