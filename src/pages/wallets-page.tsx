@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Eye, Plus } from "lucide-react";
+import { RefreshCw, Eye } from "lucide-react";
 
 export default function WalletsPage() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -179,12 +179,6 @@ export default function WalletsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button asChild>
-              <Link to="/wallets/create">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Wallet
-              </Link>
-            </Button>
             <Button
               onClick={fetchWallets}
               variant="outline"
