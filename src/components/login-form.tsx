@@ -89,9 +89,6 @@ export function LoginForm({
         </Button>
       </div>
       <div className="text-center text-sm">
-        <p className="text-muted-foreground">
-          Use the credentials provided by your administrator
-        </p>
         <p className="text-muted-foreground mt-2">
           Don't have an account?{" "}
           <button

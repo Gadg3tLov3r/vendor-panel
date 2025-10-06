@@ -584,6 +584,38 @@ class TopupsService {
       if (params.page_size)
         queryParams.append("page_size", params.page_size.toString());
 
+      // Add filter params
+      if (params.order_id) {
+        queryParams.append("order_id", params.order_id);
+      }
+      if (params.status?.length) {
+        params.status.forEach((status) => queryParams.append("status", status));
+      }
+      if (params.payment_method_id) {
+        queryParams.append(
+          "payment_method_id",
+          params.payment_method_id.toString()
+        );
+      }
+      if (params.payin_bank_account_id) {
+        queryParams.append(
+          "payin_bank_account_id",
+          params.payin_bank_account_id.toString()
+        );
+      }
+      if (params.amount_min !== null && params.amount_min !== undefined) {
+        queryParams.append("amount_min", params.amount_min.toString());
+      }
+      if (params.amount_max !== null && params.amount_max !== undefined) {
+        queryParams.append("amount_max", params.amount_max.toString());
+      }
+      if (params.created_from) {
+        queryParams.append("created_from", params.created_from);
+      }
+      if (params.created_to) {
+        queryParams.append("created_to", params.created_to);
+      }
+
       const response = await axios.get<PaymentsListResponse>(
         `${this.baseURL}${
           API_CONFIG.ENDPOINTS.ADMIN.PAYMENTS

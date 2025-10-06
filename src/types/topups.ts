@@ -305,6 +305,14 @@ export interface Payment {
 export interface PaymentsListParams {
   page?: number;
   page_size?: number;
+  order_id?: string | null;
+  status?: string[] | null;
+  payment_method_id?: number | null;
+  payin_bank_account_id?: number | null;
+  amount_min?: number | string | null;
+  amount_max?: number | string | null;
+  created_from?: string | null;
+  created_to?: string | null;
 }
 
 export interface PaymentsListResponse {

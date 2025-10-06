@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { topupsService } from "@/services/topups-service";
-import type { Payment } from "@/types/topups";
+import type { Payment, PaymentsListParams } from "@/types/topups";
 import SideBarLayout from "@/components/sidebar-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -14,6 +14,15 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   RefreshCw,
   Check,
@@ -22,7 +31,21 @@ import {
   XCircle,
   Clock,
   AlertCircle,
+  Filter,
+  Search,
+  XCircle as ClearIcon,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const PAYMENT_STATUSES = [
+  "pending",
+  "completed",
+  "paid",
+  "success",
+  "failed",
+  "error",
+  "cancelled",
+];
 
 export default function PaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -31,6 +54,45 @@ export default function PaymentsPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(20);
+  const [showFilters, setShowFilters] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
+  const [payinBankAccounts, setPayinBankAccounts] = useState<
+    Array<{
+      id: number;
+      vendor_wallet_name: string;
+      payment_method_name: string;
+    }>
+  >([]);
+
+  // Filter states - UI state (what user is editing)
+  const [filters, setFilters] = useState<
+    Omit<PaymentsListParams, "page" | "page_size">
+  >({
+    order_id: null,
+    status: null,
+    payment_method_id: null,
+    payin_bank_account_id: null,
+    amount_min: null,
+    amount_max: null,
+    created_from: null,
+    created_to: null,
+  });
+
+  // Applied filters - what's actually sent to the API
+  const [appliedFilters, setAppliedFilters] = useState<
+    Omit<PaymentsListParams, "page" | "page_size">
+  >({
+    order_id: null,
+    status: null,
+    payment_method_id: null,
+    payin_bank_account_id: null,
+    amount_min: null,
+    amount_max: null,
+    created_from: null,
+    created_to: null,
+  });
 
   const fetchPayments = useCallback(async () => {
     try {
@@ -39,6 +101,7 @@ export default function PaymentsPage() {
       const response = await topupsService.getPayments({
         page,
         page_size: pageSize,
+        ...appliedFilters,
       });
       setPayments(response.items);
       setTotal(response.total);
@@ -50,11 +113,73 @@ export default function PaymentsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize]);
+  }, [page, pageSize, appliedFilters]);
 
   useEffect(() => {
     fetchPayments();
   }, [fetchPayments]);
+
+  // Fetch payment methods and bank accounts for filters
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const [methodsRes, bankAccountsRes] = await Promise.all([
+          topupsService.getPaymentMethods(),
+          topupsService.getPayinBankAccounts(),
+        ]);
+        setPaymentMethods(methodsRes);
+        setPayinBankAccounts(bankAccountsRes);
+      } catch (error) {
+        console.error("Failed to fetch filter options:", error);
+      }
+    };
+    fetchFilterOptions();
+  }, []);
+
+  const handleFilterChange = (
+    key: keyof typeof filters,
+    value: string | number | string[] | null
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleStatusToggle = (status: string) => {
+    setFilters((prev) => {
+      const currentStatuses = prev.status || [];
+      const newStatuses = currentStatuses.includes(status)
+        ? currentStatuses.filter((s) => s !== status)
+        : [...currentStatuses, status];
+      return { ...prev, status: newStatuses.length > 0 ? newStatuses : null };
+    });
+  };
+
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      order_id: null,
+      status: null,
+      payment_method_id: null,
+      payin_bank_account_id: null,
+      amount_min: null,
+      amount_max: null,
+      created_from: null,
+      created_to: null,
+    };
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setPage(1);
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(filters);
+    setPage(1);
+  };
+
+  const hasActiveFilters = Object.values(appliedFilters).some(
+    (value) =>
+      value !== null &&
+      value !== undefined &&
+      (Array.isArray(value) ? value.length > 0 : true)
+  );
 
   const formatCurrency = (amount: string) => {
     const numAmount = parseFloat(amount);
@@ -222,15 +347,223 @@ export default function PaymentsPage() {
               Manage and view payment transactions ({total} total)
             </p>
           </div>
-          <Button
-            onClick={fetchPayments}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowFilters(!showFilters)}
+              variant={hasActiveFilters ? "default" : "outline"}
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              {hasActiveFilters ? "Filters Active" : "Filters"}
+            </Button>
+            <Button
+              onClick={fetchPayments}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
         </div>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Filter Payments</h3>
+                  {hasActiveFilters && (
+                    <Button
+                      onClick={handleClearFilters}
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <ClearIcon className="h-4 w-4" />
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Order ID Search */}
+                  <div className="space-y-2">
+                    <Label htmlFor="order-id">Order ID</Label>
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="order-id"
+                        placeholder="Search by order ID..."
+                        value={filters.order_id || ""}
+                        onChange={(e) =>
+                          handleFilterChange("order_id", e.target.value || null)
+                        }
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Payment Method */}
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-method">Payment Method</Label>
+                    <Select
+                      value={filters.payment_method_id?.toString() || "all"}
+                      onValueChange={(value) =>
+                        handleFilterChange(
+                          "payment_method_id",
+                          value === "all" ? null : parseInt(value)
+                        )
+                      }
+                    >
+                      <SelectTrigger id="payment-method" className="w-full">
+                        <SelectValue placeholder="All payment methods" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All payment methods</SelectItem>
+                        {paymentMethods.map((method) => (
+                          <SelectItem
+                            key={method.id}
+                            value={method.id.toString()}
+                          >
+                            {method.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Payin Bank Account */}
+                  <div className="space-y-2">
+                    <Label htmlFor="bank-account">Payin Bank Account</Label>
+                    <Select
+                      value={filters.payin_bank_account_id?.toString() || "all"}
+                      onValueChange={(value) =>
+                        handleFilterChange(
+                          "payin_bank_account_id",
+                          value === "all" ? null : parseInt(value)
+                        )
+                      }
+                    >
+                      <SelectTrigger id="bank-account" className="w-full">
+                        <SelectValue placeholder="All bank accounts" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All bank accounts</SelectItem>
+                        {payinBankAccounts.map((account) => (
+                          <SelectItem
+                            key={account.id}
+                            value={account.id.toString()}
+                          >
+                            {account.vendor_wallet_name} (
+                            {account.payment_method_name})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Amount Min */}
+                  <div className="space-y-2">
+                    <Label htmlFor="amount-min">Minimum Amount</Label>
+                    <Input
+                      id="amount-min"
+                      type="number"
+                      placeholder="0.00"
+                      value={filters.amount_min || ""}
+                      onChange={(e) =>
+                        handleFilterChange(
+                          "amount_min",
+                          e.target.value ? parseFloat(e.target.value) : null
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* Amount Max */}
+                  <div className="space-y-2">
+                    <Label htmlFor="amount-max">Maximum Amount</Label>
+                    <Input
+                      id="amount-max"
+                      type="number"
+                      placeholder="0.00"
+                      value={filters.amount_max || ""}
+                      onChange={(e) =>
+                        handleFilterChange(
+                          "amount_max",
+                          e.target.value ? parseFloat(e.target.value) : null
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* Created From */}
+                  <div className="space-y-2">
+                    <Label htmlFor="created-from">Created From</Label>
+                    <Input
+                      id="created-from"
+                      type="datetime-local"
+                      value={filters.created_from || ""}
+                      onChange={(e) =>
+                        handleFilterChange(
+                          "created_from",
+                          e.target.value || null
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* Created To */}
+                  <div className="space-y-2">
+                    <Label htmlFor="created-to">Created To</Label>
+                    <Input
+                      id="created-to"
+                      type="datetime-local"
+                      value={filters.created_to || ""}
+                      onChange={(e) =>
+                        handleFilterChange("created_to", e.target.value || null)
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Status Checkboxes */}
+                <div className="space-y-2">
+                  <Label>Payment Status</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {PAYMENT_STATUSES.map((status) => (
+                      <div key={status} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`status-${status}`}
+                          checked={filters.status?.includes(status) || false}
+                          onCheckedChange={() => handleStatusToggle(status)}
+                        />
+                        <label
+                          htmlFor={`status-${status}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize cursor-pointer"
+                        >
+                          {status}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Apply Button */}
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={handleApplyFilters}
+                    className="flex items-center gap-2"
+                  >
+                    <Search className="h-4 w-4" />
+                    Apply Filters
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {payments.length === 0 ? (
           <Card>
