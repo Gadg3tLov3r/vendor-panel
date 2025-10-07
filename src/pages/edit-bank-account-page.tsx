@@ -32,13 +32,18 @@ const updatePayinBankAccountSchema = z.object({
   shop_name: z.string().min(1, "Shop name is required"),
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
+  email: z.string().email("Invalid email format").optional(),
   app_secret: z.string().min(1, "App secret is required"),
   app_key: z.string().min(1, "App key is required"),
   mid: z.string().min(1, "Merchant ID is required"),
   public_key: z.string().min(1, "Public key is required"),
   private_key: z.string().min(1, "Private key is required"),
   qr_code_str: z.string().min(1, "QR code string is required"),
-  account_no: z.string().min(1, "Account number is required"),
+  account_no: z
+    .string()
+    .min(11, "Account number must be at least 11 characters")
+    .max(12, "Account number must be at most 12 characters")
+    .min(1, "Account number is required"),
 });
 
 type FormData = z.infer<typeof updatePayinBankAccountSchema>;
@@ -58,6 +63,7 @@ export default function EditBankAccountPage() {
       shop_name: "",
       username: "",
       password: "",
+      email: "",
       app_secret: "",
       app_key: "",
       mid: "",
@@ -92,6 +98,7 @@ export default function EditBankAccountPage() {
           shop_name: credentials?.shop_name || "",
           username: credentials?.username || "",
           password: credentials?.password || "",
+          email: credentials?.email || "",
           app_secret: credentials?.app_secret || "",
           app_key: credentials?.app_key || "",
           mid: credentials?.mid || "",
@@ -120,6 +127,7 @@ export default function EditBankAccountPage() {
     form.setValue("shop_name", "");
     form.setValue("username", "");
     form.setValue("password", "");
+    form.setValue("email", "");
     form.setValue("app_secret", "");
     form.setValue("app_key", "");
     form.setValue("mid", "");
@@ -162,6 +170,8 @@ export default function EditBankAccountPage() {
             credentials = {
               shop_name: data.shop_name,
               account_no: data.account_no,
+              email: data.email,
+              password: data.password,
               qr_code_str: data.qr_code_str,
             };
             break;
@@ -659,27 +669,77 @@ export default function EditBankAccountPage() {
                       </>
                     )}
                     {paymentMethodName === "BKASH_QR" && (
-                      <FormField
-                        control={form.control}
-                        name="qr_code_str"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>QR Code String</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Enter QR code string"
-                                autoComplete="off"
-                                disabled={!isEditingCredentials}
-                                className={
-                                  !isEditingCredentials ? "bg-muted" : ""
-                                }
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <>
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="email"
+                                  placeholder="Enter email address"
+                                  autoComplete="off"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="Enter password"
+                                  autoComplete="new-password"
+                                  data-form-type="other"
+                                  data-lpignore="true"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="qr_code_str"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>QR Code String</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter QR code string"
+                                  autoComplete="off"
+                                  disabled={!isEditingCredentials}
+                                  className={
+                                    !isEditingCredentials ? "bg-muted" : ""
+                                  }
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </>
                     )}
                   </div>
                 </div>

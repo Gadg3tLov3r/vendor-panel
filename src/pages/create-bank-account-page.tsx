@@ -42,13 +42,18 @@ const createPayinBankAccountSchema = z.object({
   shop_name: z.string().optional(),
   username: z.string().optional(),
   password: z.string().optional(),
+  email: z.string().email("Invalid email format").optional(),
   app_secret: z.string().optional(),
   app_key: z.string().optional(),
   mid: z.string().optional(),
   public_key: z.string().optional(),
   private_key: z.string().optional(),
   qr_code_str: z.string().optional(),
-  account_no: z.string().optional(),
+  account_no: z
+    .string()
+    .min(11, "Account number must be at least 11 characters")
+    .max(12, "Account number must be at most 12 characters")
+    .optional(),
 });
 
 type FormData = z.infer<typeof createPayinBankAccountSchema>;
@@ -71,6 +76,7 @@ export default function CreateBankAccountPage() {
       shop_name: "",
       username: "",
       password: "",
+      email: "",
       app_secret: "",
       app_key: "",
       mid: "",
@@ -158,6 +164,8 @@ export default function CreateBankAccountPage() {
             credentials = {
               shop_name: data.shop_name,
               account_no: data.account_no,
+              email: data.email,
+              password: data.password,
               qr_code_str: data.qr_code_str,
             };
             break;
@@ -540,23 +548,65 @@ export default function CreateBankAccountPage() {
                     {/* BKASH_QR specific fields */}
                     {selectedPaymentMethod &&
                       selectedPaymentMethod.name === "BKASH_QR" && (
-                        <FormField
-                          control={form.control}
-                          name="qr_code_str"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>QR Code String</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Enter QR code string"
-                                  autoComplete="off"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="email"
+                                    placeholder="Enter email address"
+                                    autoComplete="off"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="password"
+                                    placeholder="Enter password"
+                                    autoComplete="new-password"
+                                    data-form-type="other"
+                                    data-lpignore="true"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="qr_code_str"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>QR Code String</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Enter QR code string"
+                                    autoComplete="off"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
                       )}
                   </div>
                 </div>
