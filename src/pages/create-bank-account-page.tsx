@@ -160,7 +160,7 @@ export default function CreateBankAccountPage() {
               account_no: data.account_no,
             };
             break;
-          case "BKASH_QR":
+          case "BKASH_P2C_PAYMENT":
             credentials = {
               shop_name: data.shop_name,
               account_no: data.account_no,
@@ -380,7 +380,7 @@ export default function CreateBankAccountPage() {
                       )}
                     />
 
-                    {/* Shop Name - Required for BKASH_P2C, NAGAD_P2C, BKASH_QR */}
+                    {/* Shop Name - Required for BKASH_P2C, NAGAD_P2C, BKASH_P2C_PAYMENT */}
                     {selectedPaymentMethod &&
                       selectedPaymentMethod.name !== "BKASH_P2P" && (
                         <FormField
@@ -545,9 +545,9 @@ export default function CreateBankAccountPage() {
                         </>
                       )}
 
-                    {/* BKASH_QR specific fields */}
+                    {/* BKASH_P2C_PAYMENT specific fields */}
                     {selectedPaymentMethod &&
-                      selectedPaymentMethod.name === "BKASH_QR" && (
+                      selectedPaymentMethod.name === "BKASH_P2C_PAYMENT" && (
                         <>
                           <FormField
                             control={form.control}

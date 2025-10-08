@@ -166,7 +166,7 @@ export default function EditBankAccountPage() {
               account_no: data.account_no,
             };
             break;
-          case "BKASH_QR":
+          case "BKASH_P2C_PAYMENT":
             credentials = {
               shop_name: data.shop_name,
               account_no: data.account_no,
@@ -668,7 +668,7 @@ export default function EditBankAccountPage() {
                         />
                       </>
                     )}
-                    {paymentMethodName === "BKASH_QR" && (
+                    {paymentMethodName === "BKASH_P2C_PAYMENT" && (
                       <>
                         <FormField
                           control={form.control}
