@@ -21,6 +21,11 @@ export interface TopupsListParams {
   per_page?: number;
   status?: string[];
   channel?: string[];
+  vendor_wallet_id?: number | null;
+  created_from?: string | null;
+  created_to?: string | null;
+  amount_min?: number | null;
+  amount_max?: number | null;
 }
 
 export interface TopupsListResponse {

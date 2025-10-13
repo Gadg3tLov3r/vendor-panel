@@ -267,76 +267,6 @@ export default function PaymentsPage() {
     return `${seconds}s`;
   };
 
-  if (loading) {
-    return (
-      <SideBarLayout>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
-              <p className="text-muted-foreground">
-                Manage and view payment transactions
-              </p>
-            </div>
-          </div>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex items-center space-x-4">
-                    <Skeleton className="h-4 w-4" />
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </SideBarLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <SideBarLayout>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
-              <p className="text-muted-foreground">
-                Manage and view payment transactions
-              </p>
-            </div>
-          </div>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-lg font-semibold text-destructive">
-                    Error Loading Payments
-                  </p>
-                  <p className="text-sm text-muted-foreground">{error}</p>
-                </div>
-                <Button
-                  onClick={fetchPayments}
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Try Again
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </SideBarLayout>
-    );
-  }
-
   return (
     <SideBarLayout>
       <div className="flex flex-1 flex-col gap-4 p-4">
@@ -344,7 +274,8 @@ export default function PaymentsPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
             <p className="text-muted-foreground">
-              Manage and view payment transactions ({total} total)
+              Manage and view payment transactions{" "}
+              {!loading && `(${total} total)`}
             </p>
           </div>
           <div className="flex gap-2">
@@ -352,6 +283,7 @@ export default function PaymentsPage() {
               onClick={() => setShowFilters(!showFilters)}
               variant={hasActiveFilters ? "default" : "outline"}
               className="flex items-center gap-2"
+              disabled={loading}
             >
               <Filter className="h-4 w-4" />
               {hasActiveFilters ? "Filters Active" : "Filters"}
@@ -360,8 +292,11 @@ export default function PaymentsPage() {
               onClick={fetchPayments}
               variant="outline"
               className="flex items-center gap-2"
+              disabled={loading}
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
@@ -565,7 +500,43 @@ export default function PaymentsPage() {
           </Card>
         )}
 
-        {payments.length === 0 ? (
+        {loading ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center space-x-4">
+                    <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ) : error ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-lg font-semibold text-destructive">
+                    Error Loading Payments
+                  </p>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+                <Button
+                  onClick={fetchPayments}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : payments.length === 0 ? (
           <Card>
             <CardContent className="pt-6">
               <div className="text-center py-8">
@@ -700,7 +671,7 @@ export default function PaymentsPage() {
         )}
 
         {/* Pagination */}
-        {total > pageSize && (
+        {!loading && total > pageSize && (
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
               Showing {(page - 1) * pageSize + 1} to{" "}

@@ -11,17 +11,31 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { topupsService } from "@/services/topups-service";
 import type {
   Topup,
   VendorWallet,
   ApproveTopupRequest,
   RejectTopupRequest,
+  TopupsListParams,
 } from "@/types/topups";
 import { toast } from "sonner";
-import { Plus, RefreshCw } from "lucide-react";
+import {
+  Plus,
+  RefreshCw,
+  Filter,
+  Search,
+  XCircle as ClearIcon,
+} from "lucide-react";
 import { Link } from "react-router";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +59,8 @@ export default function TopupsPage() {
     total: 0,
     total_pages: 0,
   });
+  const [showFilters, setShowFilters] = useState(false);
+  const isInitialMount = useRef(true);
   const [approveDialog, setApproveDialog] = useState<{
     open: boolean;
     topup: Topup | null;
@@ -68,34 +84,60 @@ export default function TopupsPage() {
   });
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchTopups = async (page = 1) => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Filter states - UI state (what user is editing)
+  const [filters, setFilters] = useState<
+    Omit<TopupsListParams, "page" | "per_page" | "status" | "channel">
+  >({
+    vendor_wallet_id: null,
+    created_from: null,
+    created_to: null,
+    amount_min: null,
+    amount_max: null,
+  });
 
-      const response = await topupsService.getTopupsList({
-        page,
-        per_page: 20,
-        status: ["PENDING"],
-        channel: ["CASH"],
-      });
+  // Applied filters - what's actually sent to the API
+  const [appliedFilters, setAppliedFilters] = useState<
+    Omit<TopupsListParams, "page" | "per_page" | "status" | "channel">
+  >({
+    vendor_wallet_id: null,
+    created_from: null,
+    created_to: null,
+    amount_min: null,
+    amount_max: null,
+  });
 
-      setTopups(response.items);
-      setPagination({
-        page: response.page,
-        per_page: response.per_page,
-        total: response.total,
-        total_pages: Math.ceil(response.total / response.per_page),
-      });
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch topups";
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchTopups = useCallback(
+    async (page = 1) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await topupsService.getTopupsList({
+          page,
+          per_page: 20,
+          status: ["PENDING"],
+          channel: ["CASH"],
+          ...appliedFilters,
+        });
+
+        setTopups(response.items);
+        setPagination({
+          page: response.page,
+          per_page: response.per_page,
+          total: response.total,
+          total_pages: Math.ceil(response.total / response.per_page),
+        });
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch topups";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [appliedFilters]
+  );
 
   const fetchVendorWallets = async () => {
     try {
@@ -163,7 +205,44 @@ export default function TopupsPage() {
   useEffect(() => {
     fetchTopups();
     fetchVendorWallets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    fetchTopups(pagination.page);
+  }, [appliedFilters, fetchTopups, pagination.page]);
+
+  const handleFilterChange = (
+    key: keyof typeof filters,
+    value: number | string | null
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      vendor_wallet_id: null,
+      created_from: null,
+      created_to: null,
+      amount_min: null,
+      amount_max: null,
+    };
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(filters);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const hasActiveFilters = Object.values(appliedFilters).some(
+    (value) => value !== null && value !== undefined
+  );
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -212,53 +291,6 @@ export default function TopupsPage() {
     });
   };
 
-  if (error) {
-    return (
-      <SideBarLayout>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Topups</h1>
-              <p className="text-muted-foreground">
-                Manage user topups and transactions
-              </p>
-            </div>
-            <Button asChild>
-              <Link to="/top-ups/create">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Topup
-              </Link>
-            </Button>
-          </div>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div>
-                  <p className="text-lg font-semibold text-destructive">
-                    Error
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Failed to load topups data
-                  </p>
-                  <p className="text-sm text-destructive mt-2">{error}</p>
-                </div>
-                <Button
-                  onClick={() => fetchTopups()}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Retry
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </SideBarLayout>
-    );
-  }
-
   return (
     <SideBarLayout>
       <div className="flex flex-1 flex-col gap-4 p-4">
@@ -266,16 +298,168 @@ export default function TopupsPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Topups</h1>
             <p className="text-muted-foreground">
-              Manage user topups and transactions
+              Manage user topups and transactions{" "}
+              {!loading && `(${pagination.total} total)`}
             </p>
           </div>
-          <Button asChild>
-            <Link to="/top-ups/create">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Topup
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowFilters(!showFilters)}
+              variant={hasActiveFilters ? "default" : "outline"}
+              className="flex items-center gap-2"
+              disabled={loading}
+            >
+              <Filter className="h-4 w-4" />
+              {hasActiveFilters ? "Filters Active" : "Filters"}
+            </Button>
+            <Button
+              onClick={() => fetchTopups(pagination.page)}
+              variant="outline"
+              className="flex items-center gap-2"
+              disabled={loading}
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+            <Button asChild>
+              <Link to="/top-ups/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Topup
+              </Link>
+            </Button>
+          </div>
         </div>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Filter Topups</h3>
+                  {hasActiveFilters && (
+                    <Button
+                      onClick={handleClearFilters}
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <ClearIcon className="h-4 w-4" />
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Vendor Wallet */}
+                  <div className="space-y-2">
+                    <Label htmlFor="vendor-wallet">Vendor Wallet</Label>
+                    <Select
+                      value={filters.vendor_wallet_id?.toString() || "all"}
+                      onValueChange={(value) =>
+                        handleFilterChange(
+                          "vendor_wallet_id",
+                          value === "all" ? null : parseInt(value)
+                        )
+                      }
+                    >
+                      <SelectTrigger id="vendor-wallet" className="w-full">
+                        <SelectValue placeholder="All vendor wallets" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All vendor wallets</SelectItem>
+                        {vendorWallets.map((wallet) => (
+                          <SelectItem
+                            key={wallet.id}
+                            value={wallet.id.toString()}
+                          >
+                            {wallet.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Amount Min */}
+                  <div className="space-y-2">
+                    <Label htmlFor="amount-min">Minimum Amount</Label>
+                    <Input
+                      id="amount-min"
+                      type="number"
+                      placeholder="0.00"
+                      value={filters.amount_min || ""}
+                      onChange={(e) =>
+                        handleFilterChange(
+                          "amount_min",
+                          e.target.value ? parseFloat(e.target.value) : null
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* Amount Max */}
+                  <div className="space-y-2">
+                    <Label htmlFor="amount-max">Maximum Amount</Label>
+                    <Input
+                      id="amount-max"
+                      type="number"
+                      placeholder="0.00"
+                      value={filters.amount_max || ""}
+                      onChange={(e) =>
+                        handleFilterChange(
+                          "amount_max",
+                          e.target.value ? parseFloat(e.target.value) : null
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* Created From */}
+                  <div className="space-y-2">
+                    <Label htmlFor="created-from">Created From</Label>
+                    <Input
+                      id="created-from"
+                      type="datetime-local"
+                      value={filters.created_from || ""}
+                      onChange={(e) =>
+                        handleFilterChange(
+                          "created_from",
+                          e.target.value || null
+                        )
+                      }
+                    />
+                  </div>
+
+                  {/* Created To */}
+                  <div className="space-y-2">
+                    <Label htmlFor="created-to">Created To</Label>
+                    <Input
+                      id="created-to"
+                      type="datetime-local"
+                      value={filters.created_to || ""}
+                      onChange={(e) =>
+                        handleFilterChange("created_to", e.target.value || null)
+                      }
+                    />
+                  </div>
+                </div>
+
+                {/* Apply Button */}
+                <div className="flex justify-end pt-2">
+                  <Button
+                    onClick={handleApplyFilters}
+                    className="flex items-center gap-2"
+                  >
+                    <Search className="h-4 w-4" />
+                    Apply Filters
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {loading ? (
           <Card>
@@ -286,6 +470,26 @@ export default function TopupsPage() {
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ) : error ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-lg font-semibold text-destructive">
+                    Error Loading Topups
+                  </p>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+                <Button
+                  onClick={() => fetchTopups(pagination.page)}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
               </div>
             </CardContent>
           </Card>
