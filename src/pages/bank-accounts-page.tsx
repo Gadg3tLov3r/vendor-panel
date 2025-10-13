@@ -90,7 +90,14 @@ export default function BankAccountsPage() {
         toast.success("Bank account activated successfully!");
       }
 
-      fetchBankAccounts(); // Refresh the list
+      // Update local state instead of refetching
+      setBankAccounts((prevAccounts) =>
+        prevAccounts.map((account) =>
+          account.id === bankAccountId
+            ? { ...account, is_active: !currentActive }
+            : account
+        )
+      );
     } catch (error) {
       const action = currentActive ? "deactivate" : "activate";
       const errorMessage =
