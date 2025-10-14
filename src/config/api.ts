@@ -28,6 +28,7 @@ export const API_CONFIG = {
       PAYIN_BANK_ACCOUNTS_ACTIVATE: "/vendor/payin-bank-accounts",
       PAYIN_BANK_ACCOUNTS_DEACTIVATE: "/vendor/payin-bank-accounts",
       PAYMENTS: "/vendor/payments",
+      BKASH_TRANSACTIONS: "/vendor/bkash-txns",
     },
     COMMON: {
       CURRENCIES: "/common/lookups/currencies",

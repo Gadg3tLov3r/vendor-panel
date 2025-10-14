@@ -27,6 +27,8 @@ import type {
   PaymentMethodsResponse,
   PaymentsListParams,
   PaymentsListResponse,
+  BkashTransactionsListParams,
+  BkashTransactionsListResponse,
 } from "@/types/topups";
 import { authService } from "./auth-service";
 
@@ -805,6 +807,95 @@ class TopupsService {
           error.response?.data?.message ||
           error.message ||
           "Failed to update payin bank account";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getBkashTransactions(
+    params: BkashTransactionsListParams = {}
+  ): Promise<BkashTransactionsListResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params.page) queryParams.append("page", params.page.toString());
+      if (params.page_size)
+        queryParams.append("page_size", params.page_size.toString());
+      if (params.include_stats !== undefined)
+        queryParams.append("include_stats", params.include_stats.toString());
+
+      // Add filter params
+      if (params.transaction_id) {
+        queryParams.append("transaction_id", params.transaction_id);
+      }
+      if (params.bank_id) {
+        queryParams.append("bank_id", params.bank_id);
+      }
+      if (params.sender) {
+        queryParams.append("sender", params.sender);
+      }
+      if (params.receiver) {
+        queryParams.append("receiver", params.receiver);
+      }
+      if (params.direction) {
+        queryParams.append("direction", params.direction);
+      }
+      if (params.txn_status?.length) {
+        params.txn_status.forEach((status) =>
+          queryParams.append("txn_status", status)
+        );
+      }
+      if (params.bkash_status) {
+        queryParams.append("bkash_status", params.bkash_status);
+      }
+      if (params.amount_min !== null && params.amount_min !== undefined) {
+        queryParams.append("amount_min", params.amount_min.toString());
+      }
+      if (params.amount_max !== null && params.amount_max !== undefined) {
+        queryParams.append("amount_max", params.amount_max.toString());
+      }
+      if (params.occurred_from) {
+        queryParams.append("occurred_from", params.occurred_from);
+      }
+      if (params.occurred_to) {
+        queryParams.append("occurred_to", params.occurred_to);
+      }
+      if (params.payment_id !== null && params.payment_id !== undefined) {
+        queryParams.append("payment_id", params.payment_id.toString());
+      }
+      if (
+        params.payment_linked !== null &&
+        params.payment_linked !== undefined
+      ) {
+        queryParams.append("payment_linked", params.payment_linked.toString());
+      }
+      if (params.merchant_identifier) {
+        queryParams.append("merchant_identifier", params.merchant_identifier);
+      }
+      if (params.vendor_id !== null && params.vendor_id !== undefined) {
+        queryParams.append("vendor_id", params.vendor_id.toString());
+      }
+
+      const response = await axios.get<BkashTransactionsListResponse>(
+        `${this.baseURL}${
+          API_CONFIG.ENDPOINTS.ADMIN.BKASH_TRANSACTIONS
+        }?${queryParams.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authService.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch bKash transactions";
         throw new Error(message);
       }
       throw new Error("An unexpected error occurred");

@@ -326,3 +326,54 @@ export interface PaymentsListResponse {
   page: number;
   page_size: number;
 }
+
+export interface BkashTransaction {
+  id: number;
+  transaction_id: string;
+  bank_id: string;
+  sender: string;
+  receiver: string;
+  type: string;
+  channel: string;
+  currency_code: string;
+  amount: string;
+  credit: string;
+  charge: string;
+  direction: string;
+  remark: string;
+  total: string;
+  adjustment: string;
+  bkash_status: string;
+  note: string;
+  occurred_at: string;
+  txn_status: string;
+  payment_id: number;
+}
+
+export interface BkashTransactionsListParams {
+  page?: number;
+  page_size?: number;
+  include_stats?: boolean;
+  transaction_id?: string | null;
+  bank_id?: string | null;
+  sender?: string | null;
+  receiver?: string | null;
+  direction?: string | null;
+  txn_status?: string[] | null;
+  bkash_status?: string | null;
+  amount_min?: number | string | null;
+  amount_max?: number | string | null;
+  occurred_from?: string | null;
+  occurred_to?: string | null;
+  payment_id?: number | null;
+  payment_linked?: boolean | null;
+  merchant_identifier?: string | null;
+  vendor_id?: number | null;
+}
+
+export interface BkashTransactionsListResponse {
+  items: BkashTransaction[];
+  total: number;
+  page: number;
+  page_size: number;
+}

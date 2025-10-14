@@ -16,6 +16,9 @@ const TopupsPage = lazy(() => import("./pages/topups-page"));
 const BankAccountsPage = lazy(() => import("./pages/bank-accounts-page"));
 const WalletsPage = lazy(() => import("./pages/wallets-page"));
 const PaymentsPage = lazy(() => import("./pages/payments-page"));
+const BkashTransactionsPage = lazy(
+  () => import("./pages/bkash-transactions-page")
+);
 const CreateTopupPage = lazy(() => import("./pages/create-topup-page"));
 const CreateBankAccountPage = lazy(
   () => import("./pages/create-bank-account-page")
@@ -88,6 +91,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <PaymentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bkash-transactions"
+                element={
+                  <ProtectedRoute>
+                    <BkashTransactionsPage />
                   </ProtectedRoute>
                 }
               />
