@@ -246,6 +246,7 @@ export default function BankAccountsPage() {
                       <span>Payment Method</span>
                     </div>
                   </TableHead>
+                  <TableHead className="h-20">Account No</TableHead>
                   <TableHead className="h-20">Category</TableHead>
                   <TableHead className="h-20">
                     <div className="flex flex-col gap-0.5">
@@ -282,6 +283,13 @@ export default function BankAccountsPage() {
                           {account.payment_method_name}
                         </span>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {account.credentials &&
+                      typeof account.credentials === "object" &&
+                      "account_no" in account.credentials
+                        ? String(account.credentials.account_no)
+                        : "—"}
                     </TableCell>
                     <TableCell>{account.category || "—"}</TableCell>
                     <TableCell>
