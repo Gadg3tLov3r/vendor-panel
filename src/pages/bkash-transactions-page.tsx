@@ -641,6 +641,7 @@ export default function BkashTransactionsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Transaction ID</TableHead>
+                  <TableHead>Bank ID</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Direction</TableHead>
                   <TableHead>Sender</TableHead>
@@ -660,6 +661,9 @@ export default function BkashTransactionsPage() {
                   <TableRow key={txn.id}>
                     <TableCell className="font-mono text-sm font-medium">
                       {txn.transaction_id}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {txn.bank_id}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{txn.type}</Badge>
