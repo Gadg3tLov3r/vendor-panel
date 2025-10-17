@@ -41,6 +41,7 @@ const PAYMENT_STATUSES = [
   "pending",
   "completed",
   "paid",
+  "mispaid",
   "success",
   "failed",
   "error",
@@ -215,6 +216,7 @@ export default function PaymentsPage() {
   const getOrderStatusInfo = (status: string) => {
     switch (status.toLowerCase()) {
       case "paid":
+      case "mispaid":
       case "completed":
       case "success":
         return {
