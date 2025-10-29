@@ -15,7 +15,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { RefreshCw, Search, Download, FileText, DollarSign, Activity } from "lucide-react";
+import {
+  RefreshCw,
+  Search,
+  Download,
+  FileText,
+  DollarSign,
+  Activity,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function BankAccountsReportsPage() {
@@ -25,9 +32,6 @@ export default function BankAccountsReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-
-  // Set default dates to today
-  const today = new Date().toISOString().split("T")[0];
 
   const handleFetchReport = async () => {
     if (!fromDate || !toDate) {
@@ -68,24 +72,49 @@ export default function BankAccountsReportsPage() {
     }).format(numAmount);
   };
 
-  const formatJSON = (data: any) => {
-    return JSON.stringify(data, null, 2);
-  };
-
-  const handleExportJSON = () => {
+  const handleExportCSV = () => {
     if (!reportData) return;
 
-    const jsonStr = formatJSON(reportData);
-    const blob = new Blob([jsonStr], { type: "application/json" });
+    // CSV Header
+    const headers = [
+      "PBA ID",
+      "Account Number",
+      "Vendor Name",
+      "Total Amount",
+      "Transaction Count",
+    ];
+
+    // Convert items to CSV rows
+    const csvRows = [
+      headers.join(","),
+      ...reportData.items.map((item) =>
+        [
+          item.pba_id.toString(),
+          `"${item.account_no}"`,
+          `"${item.vendor_name}"`,
+          item.total_amount,
+          item.txn_count.toString(),
+        ].join(",")
+      ),
+    ];
+
+    // Add summary row
+    csvRows.push("");
+    csvRows.push("Summary");
+    csvRows.push(`Total Amount Sum,${reportData.total_amount_sum}`);
+    csvRows.push(`Total Transaction Count,${reportData.total_txn_count}`);
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `bank-accounts-report-${fromDate}-to-${toDate}.json`;
+    link.download = `bank-accounts-report-${fromDate}-to-${toDate}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    toast.success("Report exported successfully");
+    toast.success("Report exported as CSV successfully");
   };
 
   return (
@@ -115,7 +144,6 @@ export default function BankAccountsReportsPage() {
                     type="date"
                     value={fromDate}
                     onChange={(e) => setFromDate(e.target.value)}
-                    max={today}
                   />
                 </div>
                 <div className="space-y-2">
@@ -125,7 +153,6 @@ export default function BankAccountsReportsPage() {
                     type="date"
                     value={toDate}
                     onChange={(e) => setToDate(e.target.value)}
-                    max={today}
                   />
                 </div>
               </div>
@@ -140,12 +167,12 @@ export default function BankAccountsReportsPage() {
                 </Button>
                 {reportData && (
                   <Button
-                    onClick={handleExportJSON}
+                    onClick={handleExportCSV}
                     variant="outline"
                     className="flex items-center gap-2"
                   >
                     <Download className="h-4 w-4" />
-                    Export JSON
+                    Export CSV
                   </Button>
                 )}
                 {loading && (
@@ -345,4 +372,3 @@ export default function BankAccountsReportsPage() {
     </SideBarLayout>
   );
 }
-
