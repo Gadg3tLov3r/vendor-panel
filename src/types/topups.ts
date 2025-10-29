@@ -377,3 +377,22 @@ export interface BkashTransactionsListResponse {
   page: number;
   page_size: number;
 }
+
+export interface PayinBankAccountsReportsParams {
+  from_report_date: string;
+  to_report_date: string;
+}
+
+export interface BankAccountReportItem {
+  pba_id: number;
+  account_no: string;
+  vendor_name: string;
+  total_amount: string;
+  txn_count: number;
+}
+
+export interface PayinBankAccountsReportsResponse {
+  items: BankAccountReportItem[];
+  total_amount_sum: string;
+  total_txn_count: number;
+}

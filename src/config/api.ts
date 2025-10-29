@@ -27,6 +27,7 @@ export const API_CONFIG = {
       PAYIN_BANK_ACCOUNTS_APPROVE: "/vendor/payin-bank-accounts",
       PAYIN_BANK_ACCOUNTS_ACTIVATE: "/vendor/payin-bank-accounts",
       PAYIN_BANK_ACCOUNTS_DEACTIVATE: "/vendor/payin-bank-accounts",
+      PAYIN_BANK_ACCOUNTS_REPORTS: "/vendor/payin-bank-accounts/reports",
       PAYMENTS: "/vendor/payments",
       BKASH_TRANSACTIONS: "/vendor/bkash-txns",
     },

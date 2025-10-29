@@ -29,6 +29,8 @@ import type {
   PaymentsListResponse,
   BkashTransactionsListParams,
   BkashTransactionsListResponse,
+  PayinBankAccountsReportsParams,
+  PayinBankAccountsReportsResponse,
 } from "@/types/topups";
 import { authService } from "./auth-service";
 
@@ -896,6 +898,47 @@ class TopupsService {
           error.response?.data?.message ||
           error.message ||
           "Failed to fetch bKash transactions";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getPayinBankAccountsReports(
+    params: PayinBankAccountsReportsParams
+  ): Promise<PayinBankAccountsReportsResponse> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      // Using POST instead of GET since GET requests with bodies
+      // are not reliably supported in browsers/axios
+      const response = await axios.post(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.ADMIN.PAYIN_BANK_ACCOUNTS_REPORTS}`,
+        {
+          from_report_date: params.from_report_date,
+          to_report_date: params.to_report_date,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch payin bank accounts reports";
         throw new Error(message);
       }
       throw new Error("An unexpected error occurred");

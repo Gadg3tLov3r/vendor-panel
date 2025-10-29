@@ -26,6 +26,9 @@ const EditBankAccountPage = lazy(
 const CreateWalletPage = lazy(() => import("./pages/create-wallet-page"));
 const WalletDetailsPage = lazy(() => import("./pages/wallet-details-page"));
 const ChangePasswordPage = lazy(() => import("./pages/change-password-page"));
+const BankAccountsReportsPage = lazy(
+  () => import("./pages/bank-accounts-reports-page")
+);
 
 // Loading fallback component
 const PageLoader = () => (
@@ -112,6 +115,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <EditBankAccountPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bank-accounts/reports"
+                element={
+                  <ProtectedRoute>
+                    <BankAccountsReportsPage />
                   </ProtectedRoute>
                 }
               />

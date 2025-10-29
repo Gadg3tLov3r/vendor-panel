@@ -452,7 +452,7 @@ export default function PaymentsPage() {
                     <Label htmlFor="created-from">Created From</Label>
                     <Input
                       id="created-from"
-                      type="datetime-local"
+                      type="date"
                       value={filters.created_from || ""}
                       onChange={(e) =>
                         handleFilterChange(
@@ -468,7 +468,7 @@ export default function PaymentsPage() {
                     <Label htmlFor="created-to">Created To</Label>
                     <Input
                       id="created-to"
-                      type="datetime-local"
+                      type="date"
                       value={filters.created_to || ""}
                       onChange={(e) =>
                         handleFilterChange("created_to", e.target.value || null)
