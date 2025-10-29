@@ -38,14 +38,14 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 
 const PAYMENT_STATUSES = [
-  "pending",
-  "completed",
-  "paid",
-  "mispaid",
-  "success",
-  "failed",
-  "error",
-  "cancelled",
+  "PENDING",
+  "PROCESSING",
+  "PAID",
+  "MISPAID",
+  "FAILED",
+  "CANCELED",
+  "EXPIRED",
+  "DISPUTED",
 ];
 
 export default function PaymentsPage() {
@@ -214,32 +214,44 @@ export default function PaymentsPage() {
   };
 
   const getOrderStatusInfo = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "paid":
-      case "mispaid":
-      case "completed":
-      case "success":
+    switch (status.toUpperCase()) {
+      case "PAID":
         return {
           icon: CheckCircle,
           color: "text-green-600 dark:text-green-400",
           bgColor: "bg-green-50 dark:bg-green-950/20",
           borderColor: "border-green-200 dark:border-green-800",
         };
-      case "pending":
+      case "MISPAID":
+        return {
+          icon: AlertCircle,
+          color: "text-orange-600 dark:text-orange-400",
+          bgColor: "bg-orange-50 dark:bg-orange-950/20",
+          borderColor: "border-orange-200 dark:border-orange-800",
+        };
+      case "PENDING":
+      case "PROCESSING":
         return {
           icon: Clock,
           color: "text-amber-600 dark:text-amber-400",
           bgColor: "bg-amber-50 dark:bg-amber-950/20",
           borderColor: "border-amber-200 dark:border-amber-800",
         };
-      case "failed":
-      case "error":
-      case "cancelled":
+      case "FAILED":
+      case "CANCELED":
+      case "EXPIRED":
         return {
           icon: XCircle,
           color: "text-red-600 dark:text-red-400",
           bgColor: "bg-red-50 dark:bg-red-950/20",
           borderColor: "border-red-200 dark:border-red-800",
+        };
+      case "DISPUTED":
+        return {
+          icon: AlertCircle,
+          color: "text-purple-600 dark:text-purple-400",
+          bgColor: "bg-purple-50 dark:bg-purple-950/20",
+          borderColor: "border-purple-200 dark:border-purple-800",
         };
       default:
         return {
@@ -478,7 +490,7 @@ export default function PaymentsPage() {
                         />
                         <label
                           htmlFor={`status-${status}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 capitalize cursor-pointer"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                         >
                           {status}
                         </label>
