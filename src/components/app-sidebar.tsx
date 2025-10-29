@@ -9,7 +9,6 @@ import {
   IconSearch,
   IconSettings,
   IconWallet,
-  IconTransfer,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -60,12 +59,6 @@ const data = {
       title: "Payments",
       url: "/payments",
       icon: IconCreditCard,
-      addButton: false,
-    },
-    {
-      title: "bKash Transactions",
-      url: "/bkash-transactions",
-      icon: IconTransfer,
       addButton: false,
     },
   ],
