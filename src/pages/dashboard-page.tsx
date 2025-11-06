@@ -28,10 +28,6 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">User ID:</span>
-                <Badge variant="secondary">{user?.id}</Badge>
-              </div>
-              <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">Super User:</span>
                 <Badge variant={user?.is_superuser ? "default" : "secondary"}>
                   {user?.is_superuser ? "Yes" : "No"}

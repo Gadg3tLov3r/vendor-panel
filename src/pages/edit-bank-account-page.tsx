@@ -541,7 +541,7 @@ export default function EditBankAccountPage() {
                               <FormLabel>Password</FormLabel>
                               <FormControl>
                                 <Input
-                                  type="password"
+                                  type="text"
                                   placeholder="Enter password"
                                   autoComplete="new-password"
                                   data-form-type="other"
@@ -701,7 +701,7 @@ export default function EditBankAccountPage() {
                               <FormLabel>Password</FormLabel>
                               <FormControl>
                                 <Input
-                                  type="password"
+                                  type="text"
                                   placeholder="Enter password"
                                   autoComplete="new-password"
                                   data-form-type="other"

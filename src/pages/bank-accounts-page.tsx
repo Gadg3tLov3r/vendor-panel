@@ -240,7 +240,6 @@ export default function BankAccountsPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
-                  <TableHead className="h-20">ID</TableHead>
                   <TableHead className="h-20">
                     <div className="flex flex-col gap-0.5">
                       <span>Vendor Wallet</span>
@@ -277,9 +276,6 @@ export default function BankAccountsPage() {
               <TableBody>
                 {bankAccounts.map((account) => (
                   <TableRow key={account.id}>
-                    <TableCell className="font-mono text-sm font-medium">
-                      {account.id}
-                    </TableCell>
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
                         <span>{account.vendor_wallet_name}</span>

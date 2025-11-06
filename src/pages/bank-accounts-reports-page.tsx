@@ -77,7 +77,6 @@ export default function BankAccountsReportsPage() {
 
     // CSV Header
     const headers = [
-      "PBA ID",
       "Account Number",
       "Vendor Name",
       "Total Amount",
@@ -85,17 +84,22 @@ export default function BankAccountsReportsPage() {
     ];
 
     // Convert items to CSV rows
+    // Format account number with ="" to force Excel to treat it as text (preserves leading zeros)
+    // In CSV, we escape quotes by doubling them, so ="value" becomes "=""value"""
     const csvRows = [
       headers.join(","),
-      ...reportData.items.map((item) =>
-        [
-          item.pba_id.toString(),
-          `"${item.account_no}"`,
+      ...reportData.items.map((item) => {
+        const accountNo = String(item.account_no);
+        // Format as Excel formula to preserve leading zeros: ="01979834473"
+        // In CSV format: "=""01979834473"""
+        const accountNoFormatted = `"=""${accountNo}"""`;
+        return [
+          accountNoFormatted,
           `"${item.vendor_name}"`,
           item.total_amount,
           item.txn_count.toString(),
-        ].join(",")
-      ),
+        ].join(",");
+      }),
     ];
 
     // Add summary row
@@ -333,7 +337,7 @@ export default function BankAccountsReportsPage() {
                         {reportData.items.map((item) => (
                           <TableRow key={item.pba_id}>
                             <TableCell className="font-mono text-sm">
-                              {item.account_no}
+                              {String(item.account_no)}
                             </TableCell>
                             <TableCell className="font-medium">
                               {item.vendor_name}
