@@ -268,6 +268,7 @@ export default function BankAccountsPage() {
                     </div>
                   </TableHead>
                   <TableHead className="h-20">Note</TableHead>
+                  <TableHead className="h-20">Status</TableHead>
                   <TableHead className="h-20">Approve</TableHead>
                   <TableHead className="h-20">Activate</TableHead>
                   <TableHead className="h-20">Actions</TableHead>
@@ -275,7 +276,14 @@ export default function BankAccountsPage() {
               </TableHeader>
               <TableBody>
                 {bankAccounts.map((account) => (
-                  <TableRow key={account.id}>
+                  <TableRow
+                    key={account.id}
+                    className={
+                      account.is_locked
+                        ? "bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-950/60"
+                        : undefined
+                    }
+                  >
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
                         <span>{account.vendor_wallet_name}</span>
@@ -321,6 +329,9 @@ export default function BankAccountsPage() {
                     </TableCell>
                     <TableCell className="max-w-xs truncate">
                       {account.note || "—"}
+                    </TableCell>
+                    <TableCell>
+                      {account.is_locked ? "Blacklisted" : "—"}
                     </TableCell>
                     <TableCell>
                       <Switch

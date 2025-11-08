@@ -253,6 +253,7 @@ export interface PayinBankAccount {
   daily_receivable_amount: string;
   daily_received_amount: string;
   is_active: boolean;
+  is_locked: boolean;
   is_approved: boolean;
   credentials: Record<string, unknown>;
   category: string;
