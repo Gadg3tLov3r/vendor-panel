@@ -28,7 +28,7 @@ export function NavMain({
     }[];
   }[];
 }) {
-  const { isMobile, state } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
 
   const getCreateUrl = (url: string) => {
@@ -55,7 +55,7 @@ export function NavMain({
                 size="icon"
                 className={cn(
                   "size-8 group-data-[collapsible=icon]:opacity-0",
-                  (state === "collapsed" || isMobile) && "hidden"
+                  state === "collapsed" && "hidden"
                 )}
                 variant="ghost"
                 asChild
