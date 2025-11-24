@@ -1,14 +1,17 @@
-import { IconPlus, type Icon } from "@tabler/icons-react";
-import { Link, useLocation } from "react-router";
+"use client";
+
+import { PlusCircle, type LucideIcon } from "lucide-react";
 
 import {
   SidebarGroup,
-  SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router";
 
 export function NavMain({
   items,
@@ -16,56 +19,56 @@ export function NavMain({
   items: {
     title: string;
     url: string;
-    icon?: Icon;
     addButton?: boolean;
+    icon?: LucideIcon;
+    isActive?: boolean;
+    items?: {
+      title: string;
+      url: string;
+    }[];
   }[];
 }) {
+  const { isMobile, state } = useSidebar();
   const location = useLocation();
 
-  // Generate create URL based on the item URL
   const getCreateUrl = (url: string) => {
     return `${url}/create`;
   };
 
   return (
     <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem
-              className="flex items-center gap-2"
-              key={item.title}
+      <SidebarMenu>
+        {items.map((item) => (
+          <SidebarMenuItem className="flex items-center gap-2">
+            <SidebarMenuButton
+              isActive={location.pathname === item.url}
+              tooltip="Quick Create"
+              asChild
             >
-              <SidebarMenuButton
-                tooltip={item.title}
+              <Link to={item.url}>
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+              </Link>
+            </SidebarMenuButton>
+            {item.addButton && (
+              <Button
+                size="icon"
+                className={cn(
+                  "size-8 group-data-[collapsible=icon]:opacity-0",
+                  (state === "collapsed" || isMobile) && "hidden"
+                )}
+                variant="ghost"
                 asChild
-                isActive={location.pathname === item.url}
               >
-                <Link to={item.url}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
+                <Link to={getCreateUrl(item.url)}>
+                  <PlusCircle />
+                  <span className="sr-only">Add</span>
                 </Link>
-              </SidebarMenuButton>
-              {item.addButton && (
-                <Button
-                  size="icon"
-                  className="size-8 group-data-[collapsible=icon]:opacity-0"
-                  variant="ghost"
-                  asChild
-                  title={`Create ${item.title.slice(0, -1)}`} // Remove 's' from title for singular form
-                >
-                  <Link to={getCreateUrl(item.url)}>
-                    <IconPlus />
-                    <span className="sr-only">
-                      Add {item.title.slice(0, -1)}
-                    </span>
-                  </Link>
-                </Button>
-              )}
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
+              </Button>
+            )}
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
     </SidebarGroup>
   );
 }

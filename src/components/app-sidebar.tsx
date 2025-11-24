@@ -1,17 +1,13 @@
 import * as React from "react";
 import {
-  IconBrandTelegram,
-  IconCashBanknote,
-  IconCoin,
-  IconCreditCard,
-  IconDashboard,
-  IconHelp,
-  IconSearch,
-  IconSettings,
-  IconWallet,
-  IconFileReport,
-  IconBolt,
-} from "@tabler/icons-react";
+  Banknote,
+  Bolt,
+  Coins,
+  CreditCard,
+  File,
+  LayoutDashboard,
+  Wallet,
+} from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -23,75 +19,60 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/use-auth";
 
+// This is sample data.
 const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
+
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: IconDashboard,
+      icon: LayoutDashboard,
       addButton: false,
     },
     {
       title: "Topups",
       url: "/top-ups",
-      icon: IconCoin,
+      icon: Coins,
       addButton: true,
     },
     {
       title: "Bank Accounts",
       url: "/bank-accounts",
-      icon: IconCashBanknote,
+      icon: Banknote,
       addButton: true,
     },
     {
       title: "Wallets",
       url: "/wallets",
-      icon: IconWallet,
+      icon: Wallet,
       addButton: false,
     },
     {
       title: "Payments",
       url: "/payments",
-      icon: IconCreditCard,
+      icon: CreditCard,
       addButton: false,
     },
     {
       title: "Bank Accounts Reports",
       url: "/bank-accounts/reports",
-      icon: IconFileReport,
+      icon: File,
       addButton: false,
     },
     {
       title: "Fast Deposit",
       url: "/fast-deposit",
-      icon: IconBolt,
+      icon: Bolt,
       addButton: false,
-    },
-  ],
-
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
     },
   ],
 };
@@ -105,9 +86,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     email: user?.principal || "vendor",
     avatar: "/avatars/default.jpg", // You can add a default avatar or use user avatar if available
   };
-
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -130,23 +110,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <a
-                href="https://t.me/multipayz"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2"
-              >
-                <IconBrandTelegram className="w-4 h-4" />
-                <span>@multipayz</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
         <NavUser user={userData} />
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }
