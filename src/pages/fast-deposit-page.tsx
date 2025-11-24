@@ -23,7 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -72,12 +71,11 @@ export default function FastDepositPage() {
   const [loadingDetails, setLoadingDetails] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [paymentMethodId, setPaymentMethodId] = useState<number | null>(null);
+  const [paymentMethodId, setPaymentMethodId] = useState<number | null>(2);
   const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
     vendor_set_payment_commission_rate_percent: "",
-    vendor_set_payment_commission_rate_fixed: "",
   });
   const [updating, setUpdating] = useState(false);
 
@@ -86,10 +84,7 @@ export default function FastDepositPage() {
       setLoadingPaymentMethods(true);
       const response = await topupsService.getPaymentMethods();
       setPaymentMethods(response);
-      // Set default to first payment method if available
-      if (response.length > 0 && !paymentMethodId) {
-        setPaymentMethodId(response[0].id);
-      }
+      // Payment method ID is set to 2 by default and cannot be changed
     } catch (error) {
       console.error("Failed to fetch payment methods:", error);
       toast.error("Failed to fetch payment methods");
@@ -148,17 +143,14 @@ export default function FastDepositPage() {
   const handleEditClick = () => {
     if (commissionDetails) {
       setEditData({
-        vendor_set_payment_commission_rate_percent:
-          commissionDetails.vendor_set_payment_commission_rate_percent,
-        vendor_set_payment_commission_rate_fixed:
-          commissionDetails.vendor_set_payment_commission_rate_fixed,
+        vendor_set_payment_commission_rate_percent: "",
       });
       setEditDialogOpen(true);
     }
   };
 
   const handleUpdateCommission = async () => {
-    if (!paymentMethodId) {
+    if (!paymentMethodId || !commissionDetails) {
       return;
     }
 
@@ -169,7 +161,7 @@ export default function FastDepositPage() {
           editData.vendor_set_payment_commission_rate_percent
         ),
         vendor_set_payment_commission_rate_fixed: parseFloat(
-          editData.vendor_set_payment_commission_rate_fixed
+          commissionDetails.vendor_set_payment_commission_rate_fixed || "0"
         ),
       });
       toast.success("Commission updated successfully!");
@@ -187,7 +179,6 @@ export default function FastDepositPage() {
 
   useEffect(() => {
     fetchPaymentMethods();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -199,18 +190,6 @@ export default function FastDepositPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentMethodId]);
-
-  const formatCurrency = (amount: number | string | null | undefined) => {
-    if (amount === null || amount === undefined) return "—";
-    const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
-    if (isNaN(numAmount)) return "—";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "BDT",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(numAmount);
-  };
 
   const formatPercent = (value: string | null | undefined) => {
     if (value === null || value === undefined) return "—";
@@ -305,6 +284,7 @@ export default function FastDepositPage() {
                 <Select
                   value={paymentMethodId?.toString() || ""}
                   onValueChange={(value) => setPaymentMethodId(parseInt(value))}
+                  disabled={true}
                 >
                   <SelectTrigger id="payment-method" className="w-full">
                     <SelectValue placeholder="Select a payment method" />
@@ -356,83 +336,62 @@ export default function FastDepositPage() {
                   className="flex items-center gap-2"
                 >
                   <Edit className="h-4 w-4" />
-                  Edit
+                  Set your own commission
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="min-w-0 p-4">
               {loadingDetails ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <Skeleton className="h-16 w-full" />
-                  <Skeleton className="h-16 w-full" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {/* Payment Commission Section */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold">
-                        Payment Commission
-                      </h3>
-                      <Badge
-                        variant={
-                          commissionDetails.is_vendor_set_payment_commission_approved
-                            ? "default"
-                            : "secondary"
-                        }
-                        className="text-xs"
-                      >
-                        {commissionDetails.is_vendor_set_payment_commission_approved
-                          ? "Approved"
-                          : "Pending"}
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <Card>
-                        <CardContent className="p-2">
-                          <div className="space-y-0.5">
-                            <p className="text-xs text-muted-foreground">
-                              System Rate
-                            </p>
-                            <p className="text-base font-bold">
-                              {formatPercent(
-                                commissionDetails.payment_commission_rate_percent
-                              )}{" "}
-                              +{" "}
-                              {formatCurrency(
-                                commissionDetails.payment_commission_rate_fixed
-                              )}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      <Card className="border-primary/50 bg-primary/5">
-                        <CardContent className="p-2">
-                          <div className="space-y-0.5">
-                            <p className="text-xs text-muted-foreground">
-                              Vendor Set Rate
-                            </p>
-                            <p className="text-base font-bold text-primary">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Card className="border">
+                    <CardContent className="p-3">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          System Rate
+                        </p>
+                        <p className="text-xl font-bold">
+                          {formatPercent(
+                            commissionDetails.payment_commission_rate_percent
+                          )}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-primary/50 bg-primary/5">
+                    <CardContent className="p-3">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Vendor Set Rate
+                        </p>
+                        {commissionDetails.vendor_set_payment_commission_rate_percent ? (
+                          <>
+                            <p className="text-xl font-bold text-primary">
                               {formatPercent(
                                 commissionDetails.vendor_set_payment_commission_rate_percent
-                              )}{" "}
-                              +{" "}
-                              {formatCurrency(
-                                commissionDetails.vendor_set_payment_commission_rate_fixed
                               )}
                             </p>
                             {commissionDetails.vendor_payment_commission_last_set_at && (
-                              <p className="text-[10px] text-muted-foreground">
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                Last updated:{" "}
                                 {formatDate(
                                   commissionDetails.vendor_payment_commission_last_set_at
                                 )}
                               </p>
                             )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
+                          </>
+                        ) : (
+                          <p className="text-xs text-muted-foreground italic">
+                            Not set yet
+                          </p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
             </CardContent>
@@ -468,7 +427,7 @@ export default function FastDepositPage() {
                           <TableHead className="w-12">Sl No</TableHead>
                           <TableHead>Wallet Name</TableHead>
                           <TableHead>Payment Method</TableHead>
-                          <TableHead>Commission Rate</TableHead>
+                          <TableHead>Effective Commission Rate</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -485,10 +444,6 @@ export default function FastDepositPage() {
                               {formatPercent(
                                 item.resolved_payment_commission_rate_percent
                               )}{" "}
-                              +{" "}
-                              {formatCurrency(
-                                item.resolved_payment_commission_rate_fixed
-                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -511,9 +466,9 @@ export default function FastDepositPage() {
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Edit Commission Rates</DialogTitle>
+              <DialogTitle>Set your own Commission Rates</DialogTitle>
               <DialogDescription>
-                Update the vendor set payment commission rates for this payment
+                Set the vendor set payment commission rates for this payment
                 method.
               </DialogDescription>
             </DialogHeader>
@@ -526,31 +481,12 @@ export default function FastDepositPage() {
                   id="vendor_set_payment_commission_rate_percent"
                   type="number"
                   step="0.01"
-                  placeholder="0.00"
                   value={editData.vendor_set_payment_commission_rate_percent}
                   onChange={(e) =>
                     setEditData({
                       ...editData,
                       vendor_set_payment_commission_rate_percent:
                         e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="vendor_set_payment_commission_rate_fixed">
-                  Vendor Set Payment Commission Rate (Fixed)
-                </Label>
-                <Input
-                  id="vendor_set_payment_commission_rate_fixed"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={editData.vendor_set_payment_commission_rate_fixed}
-                  onChange={(e) =>
-                    setEditData({
-                      ...editData,
-                      vendor_set_payment_commission_rate_fixed: e.target.value,
                     })
                   }
                 />

@@ -1024,7 +1024,7 @@ class TopupsService {
     paymentMethodId: number,
     data: {
       vendor_set_payment_commission_rate_percent: number;
-      vendor_set_payment_commission_rate_fixed: number;
+      vendor_set_payment_commission_rate_fixed?: number;
     }
   ): Promise<any> {
     try {
