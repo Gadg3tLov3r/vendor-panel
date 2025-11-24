@@ -123,10 +123,10 @@ export default function BankAccountsPage() {
   if (loading) {
     return (
       <SideBarLayout>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
+        <div className="flex flex-1 flex-col gap-4 p-4 min-w-0">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 Payin Bank Accounts
               </h1>
               <p className="text-muted-foreground">
@@ -135,8 +135,8 @@ export default function BankAccountsPage() {
             </div>
           </div>
 
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="flex items-center space-x-4">
@@ -158,10 +158,10 @@ export default function BankAccountsPage() {
   if (error) {
     return (
       <SideBarLayout>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
+        <div className="flex flex-1 flex-col gap-4 p-4 min-w-0">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 Payin Bank Accounts
               </h1>
               <p className="text-muted-foreground">
@@ -170,8 +170,8 @@ export default function BankAccountsPage() {
             </div>
           </div>
 
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
               <div className="space-y-4">
                 <div>
                   <p className="text-lg font-semibold text-destructive">
@@ -196,10 +196,10 @@ export default function BankAccountsPage() {
 
   return (
     <SideBarLayout>
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+      <div className="flex flex-1 flex-col gap-4 p-4 min-w-0">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Payin Bank Accounts
             </h1>
             <p className="text-muted-foreground">
@@ -207,27 +207,36 @@ export default function BankAccountsPage() {
               {bankAccounts.length} total)
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
             <Button
               onClick={fetchBankAccounts}
               variant="outline"
-              className="flex items-center gap-2"
+              size="sm"
+              className="flex items-center gap-2 w-full sm:w-auto"
+              disabled={loading}
             >
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
-            <Button asChild>
+            <Button
+              asChild
+              size="sm"
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
               <Link to="/bank-accounts/create">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Bank Account
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Create Bank Account</span>
+                <span className="sm:hidden">Create</span>
               </Link>
             </Button>
           </div>
         </div>
 
         {bankAccounts.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
               <div className="text-center py-8">
                 <p className="text-muted-foreground">
                   No payin bank accounts found
@@ -236,8 +245,9 @@ export default function BankAccountsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="rounded-md border">
-            <Table>
+          <div className="rounded-md border min-w-0">
+            <div className="w-full max-w-full overflow-x-auto min-w-0">
+              <Table className="w-full">
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
                   <TableHead className="h-20">
@@ -364,6 +374,7 @@ export default function BankAccountsPage() {
                 ))}
               </TableBody>
             </Table>
+            </div>
           </div>
         )}
       </div>

@@ -293,20 +293,22 @@ export default function TopupsPage() {
 
   return (
     <SideBarLayout>
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Topups</h1>
+      <div className="flex flex-1 flex-col gap-4 p-4 min-w-0">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              Topups
+            </h1>
             <p className="text-muted-foreground">
-              Manage user topups and transactions{" "}
-              {!loading && `(${pagination.total} total)`}
+              Manage {!loading && `(${pagination.total} total)`}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
             <Button
               onClick={() => setShowFilters(!showFilters)}
               variant={hasActiveFilters ? "default" : "outline"}
-              className="flex items-center gap-2"
+              size="sm"
+              className="flex items-center gap-2 w-full sm:w-auto"
               disabled={loading}
             >
               <Filter className="h-4 w-4" />
@@ -315,7 +317,8 @@ export default function TopupsPage() {
             <Button
               onClick={() => fetchTopups(pagination.page)}
               variant="outline"
-              className="flex items-center gap-2"
+              size="sm"
+              className="flex items-center gap-2 w-full sm:w-auto"
               disabled={loading}
             >
               <RefreshCw
@@ -323,10 +326,15 @@ export default function TopupsPage() {
               />
               Refresh
             </Button>
-            <Button asChild>
+            <Button
+              asChild
+              size="sm"
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
               <Link to="/top-ups/create">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Topup
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Create Topup</span>
+                <span className="sm:hidden">Create</span>
               </Link>
             </Button>
           </div>
@@ -334,8 +342,8 @@ export default function TopupsPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Filter Topups</h3>
@@ -462,8 +470,8 @@ export default function TopupsPage() {
         )}
 
         {loading ? (
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
               <div className="space-y-4">
                 <Skeleton className="h-12 w-full" />
                 <Skeleton className="h-12 w-full" />
@@ -474,8 +482,8 @@ export default function TopupsPage() {
             </CardContent>
           </Card>
         ) : error ? (
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
               <div className="space-y-4">
                 <div>
                   <p className="text-lg font-semibold text-destructive">
@@ -494,59 +502,61 @@ export default function TopupsPage() {
             </CardContent>
           </Card>
         ) : topups.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6">
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No topups found</p>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Vendor Wallet</TableHead>
-                  <TableHead>Channel</TableHead>
-                  <TableHead>Requested Amount</TableHead>
-                  <TableHead>Paid Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Note</TableHead>
-                  <TableHead>Created At</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topups.map((topup) => (
-                  <TableRow key={topup.id}>
-                    <TableCell className="font-medium">
-                      {getVendorWalletName(topup.vendor_wallet_id)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getChannelBadgeVariant(topup.channel)}>
-                        {topup.channel}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {formatCurrency(topup.requested_amount)}
-                    </TableCell>
-                    <TableCell>
-                      {topup.paid_amount
-                        ? formatCurrency(topup.paid_amount)
-                        : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(topup.status)}>
-                        {topup.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {topup.channel_note || "—"}
-                    </TableCell>
-                    <TableCell>{formatDate(topup.created_at)}</TableCell>
+          <div className="rounded-md border min-w-0">
+            <div className="w-full max-w-full overflow-x-auto min-w-0">
+              <Table className="w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Vendor Wallet</TableHead>
+                    <TableHead>Channel</TableHead>
+                    <TableHead>Requested Amount</TableHead>
+                    <TableHead>Paid Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Note</TableHead>
+                    <TableHead>Created At</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {topups.map((topup) => (
+                    <TableRow key={topup.id}>
+                      <TableCell className="font-medium">
+                        {getVendorWalletName(topup.vendor_wallet_id)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getChannelBadgeVariant(topup.channel)}>
+                          {topup.channel}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {formatCurrency(topup.requested_amount)}
+                      </TableCell>
+                      <TableCell>
+                        {topup.paid_amount
+                          ? formatCurrency(topup.paid_amount)
+                          : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusBadgeVariant(topup.status)}>
+                          {topup.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {topup.channel_note || "—"}
+                      </TableCell>
+                      <TableCell>{formatDate(topup.created_at)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
 
