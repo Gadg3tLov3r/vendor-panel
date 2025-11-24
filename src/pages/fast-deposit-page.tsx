@@ -1,0 +1,576 @@
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { topupsService } from "@/services/topups-service";
+import type { PaymentMethod } from "@/types/topups";
+import SideBarLayout from "@/components/sidebar-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Edit } from "lucide-react";
+
+interface CommissionData {
+  vwm_id: number;
+  wallet_id: number;
+  wallet_name: string;
+  payment_method_id: number;
+  payment_method_name: string;
+  resolved_payment_commission_rate_percent: string;
+  resolved_payment_commission_rate_fixed: string;
+}
+
+interface CommissionDetails {
+  payment_commission_rate_percent: string;
+  payment_commission_rate_fixed: string;
+  disbursement_commission_rate_percent: string;
+  disbursement_commission_rate_fixed: string;
+  vendor_set_payment_commission_rate_percent: string;
+  vendor_set_payment_commission_rate_fixed: string;
+  vendor_set_disbursement_commission_rate_percent: string;
+  vendor_set_disbursement_commission_rate_fixed: string;
+  is_vendor_set_payment_commission_approved: boolean;
+  is_vendor_set_disburment_commission_approved: boolean;
+  vendor_payment_commission_last_set_at: string | null;
+  vendor_disbursement_commission_last_set_at: string | null;
+  vendor_payment_commission_approved_at: string | null;
+  vendor_disbursement_commission_approved_at: string | null;
+  wallet_id: number;
+  payment_method_id: number;
+}
+
+export default function FastDepositPage() {
+  const [commissionData, setCommissionData] = useState<CommissionData[]>([]);
+  const [commissionDetails, setCommissionDetails] =
+    useState<CommissionDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingDetails, setLoadingDetails] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentMethodId, setPaymentMethodId] = useState<number | null>(null);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(true);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    vendor_set_payment_commission_rate_percent: "",
+    vendor_set_payment_commission_rate_fixed: "",
+  });
+  const [updating, setUpdating] = useState(false);
+
+  const fetchPaymentMethods = async () => {
+    try {
+      setLoadingPaymentMethods(true);
+      const response = await topupsService.getPaymentMethods();
+      setPaymentMethods(response);
+      // Set default to first payment method if available
+      if (response.length > 0 && !paymentMethodId) {
+        setPaymentMethodId(response[0].id);
+      }
+    } catch (error) {
+      console.error("Failed to fetch payment methods:", error);
+      toast.error("Failed to fetch payment methods");
+    } finally {
+      setLoadingPaymentMethods(false);
+    }
+  };
+
+  const fetchCommission = async () => {
+    if (!paymentMethodId) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await topupsService.getPaymentMethodCommission(
+        paymentMethodId,
+        100,
+        0
+      );
+      // Response is an array of commission data
+      const data = Array.isArray(response) ? response : [];
+      setCommissionData(data as CommissionData[]);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch commission data";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCommissionDetails = async () => {
+    if (!paymentMethodId) {
+      return;
+    }
+
+    try {
+      setLoadingDetails(true);
+      const response = await topupsService.getPaymentMethodCommissionDetails(
+        paymentMethodId
+      );
+      setCommissionDetails(response as CommissionDetails);
+    } catch (error) {
+      console.error("Failed to fetch commission details:", error);
+      // Don't show error toast for details, just log it
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleEditClick = () => {
+    if (commissionDetails) {
+      setEditData({
+        vendor_set_payment_commission_rate_percent:
+          commissionDetails.vendor_set_payment_commission_rate_percent,
+        vendor_set_payment_commission_rate_fixed:
+          commissionDetails.vendor_set_payment_commission_rate_fixed,
+      });
+      setEditDialogOpen(true);
+    }
+  };
+
+  const handleUpdateCommission = async () => {
+    if (!paymentMethodId) {
+      return;
+    }
+
+    try {
+      setUpdating(true);
+      await topupsService.updatePaymentMethodCommission(paymentMethodId, {
+        vendor_set_payment_commission_rate_percent: parseFloat(
+          editData.vendor_set_payment_commission_rate_percent
+        ),
+        vendor_set_payment_commission_rate_fixed: parseFloat(
+          editData.vendor_set_payment_commission_rate_fixed
+        ),
+      });
+      toast.success("Commission updated successfully!");
+      setEditDialogOpen(false);
+      // Refresh the commission details
+      await fetchCommissionDetails();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to update commission";
+      toast.error(errorMessage);
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPaymentMethods();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (paymentMethodId) {
+      setCommissionData([]); // Clear previous data when payment method changes
+      setCommissionDetails(null);
+      fetchCommission();
+      fetchCommissionDetails();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentMethodId]);
+
+  const formatCurrency = (amount: number | string | null | undefined) => {
+    if (amount === null || amount === undefined) return "—";
+    const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+    if (isNaN(numAmount)) return "—";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "BDT",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(numAmount);
+  };
+
+  const formatPercent = (value: string | null | undefined) => {
+    if (value === null || value === undefined) return "—";
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return "—";
+    return `${numValue.toFixed(2)}%`;
+  };
+
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "—";
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "—";
+    }
+  };
+
+  if (loadingPaymentMethods) {
+    return (
+      <SideBarLayout>
+        <div className="flex flex-1 flex-col gap-4 p-4 min-w-0">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                Fast Deposit
+              </h1>
+              <p className="text-muted-foreground">
+                View payment method commission information
+              </p>
+            </div>
+          </div>
+
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </SideBarLayout>
+    );
+  }
+
+  return (
+    <SideBarLayout>
+      <div className="flex flex-1 flex-col gap-4 p-4 min-w-0">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              Fast Deposit
+            </h1>
+            <p className="text-muted-foreground">
+              View payment method commission information
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+            <Button
+              onClick={fetchCommission}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 w-full sm:w-auto"
+              disabled={loading || !paymentMethodId}
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+          </div>
+        </div>
+
+        <Card className="min-w-0">
+          <CardHeader>
+            <CardTitle>Select Payment Method</CardTitle>
+          </CardHeader>
+          <CardContent className="min-w-0">
+            <div className="space-y-2">
+              <Label htmlFor="payment-method">Payment Method</Label>
+              {loadingPaymentMethods ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  value={paymentMethodId?.toString() || ""}
+                  onValueChange={(value) => setPaymentMethodId(parseInt(value))}
+                >
+                  <SelectTrigger id="payment-method" className="w-full">
+                    <SelectValue placeholder="Select a payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {paymentMethods.map((method) => (
+                      <SelectItem key={method.id} value={method.id.toString()}>
+                        {method.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {error && (
+          <Card className="min-w-0">
+            <CardContent className="pt-6 min-w-0">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-lg font-semibold text-destructive">
+                    Error Loading Commission Data
+                  </p>
+                  <p className="text-sm text-muted-foreground">{error}</p>
+                </div>
+                <Button
+                  onClick={fetchCommission}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {paymentMethodId && commissionDetails && (
+          <Card className="min-w-0">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Commission Details</CardTitle>
+                <Button
+                  onClick={handleEditClick}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="min-w-0 p-4">
+              {loadingDetails ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Payment Commission Section */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold">
+                        Payment Commission
+                      </h3>
+                      <Badge
+                        variant={
+                          commissionDetails.is_vendor_set_payment_commission_approved
+                            ? "default"
+                            : "secondary"
+                        }
+                        className="text-xs"
+                      >
+                        {commissionDetails.is_vendor_set_payment_commission_approved
+                          ? "Approved"
+                          : "Pending"}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <Card>
+                        <CardContent className="p-2">
+                          <div className="space-y-0.5">
+                            <p className="text-xs text-muted-foreground">
+                              System Rate
+                            </p>
+                            <p className="text-base font-bold">
+                              {formatPercent(
+                                commissionDetails.payment_commission_rate_percent
+                              )}{" "}
+                              +{" "}
+                              {formatCurrency(
+                                commissionDetails.payment_commission_rate_fixed
+                              )}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-primary/50 bg-primary/5">
+                        <CardContent className="p-2">
+                          <div className="space-y-0.5">
+                            <p className="text-xs text-muted-foreground">
+                              Vendor Set Rate
+                            </p>
+                            <p className="text-base font-bold text-primary">
+                              {formatPercent(
+                                commissionDetails.vendor_set_payment_commission_rate_percent
+                              )}{" "}
+                              +{" "}
+                              {formatCurrency(
+                                commissionDetails.vendor_set_payment_commission_rate_fixed
+                              )}
+                            </p>
+                            {commissionDetails.vendor_payment_commission_last_set_at && (
+                              <p className="text-[10px] text-muted-foreground">
+                                {formatDate(
+                                  commissionDetails.vendor_payment_commission_last_set_at
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {paymentMethodId && (
+          <Card className="min-w-0">
+            <CardHeader>
+              <CardTitle>
+                Commission Information
+                {commissionData.length > 0 && (
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    ({commissionData.length} wallet
+                    {commissionData.length !== 1 ? "s" : ""})
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="min-w-0 p-4">
+              {loading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                </div>
+              ) : commissionData.length > 0 ? (
+                <div className="rounded-md border min-w-0">
+                  <div className="w-full max-w-full overflow-x-auto min-w-0">
+                    <Table className="w-full">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">Sl No</TableHead>
+                          <TableHead>Wallet Name</TableHead>
+                          <TableHead>Payment Method</TableHead>
+                          <TableHead>Commission Rate</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {commissionData.map((item, index) => (
+                          <TableRow key={item.vwm_id}>
+                            <TableCell className="text-muted-foreground">
+                              {index + 1}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {item.wallet_name}
+                            </TableCell>
+                            <TableCell>{item.payment_method_name}</TableCell>
+                            <TableCell>
+                              {formatPercent(
+                                item.resolved_payment_commission_rate_percent
+                              )}{" "}
+                              +{" "}
+                              {formatCurrency(
+                                item.resolved_payment_commission_rate_fixed
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">
+                    No commission data found
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Edit Commission Dialog */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Commission Rates</DialogTitle>
+              <DialogDescription>
+                Update the vendor set payment commission rates for this payment
+                method.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="vendor_set_payment_commission_rate_percent">
+                  Vendor Set Payment Commission Rate (Percent)
+                </Label>
+                <Input
+                  id="vendor_set_payment_commission_rate_percent"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={editData.vendor_set_payment_commission_rate_percent}
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      vendor_set_payment_commission_rate_percent:
+                        e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="vendor_set_payment_commission_rate_fixed">
+                  Vendor Set Payment Commission Rate (Fixed)
+                </Label>
+                <Input
+                  id="vendor_set_payment_commission_rate_fixed"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={editData.vendor_set_payment_commission_rate_fixed}
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      vendor_set_payment_commission_rate_fixed: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+                disabled={updating}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateCommission} disabled={updating}>
+                {updating ? "Updating..." : "Update"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </SideBarLayout>
+  );
+}

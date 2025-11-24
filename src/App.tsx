@@ -29,6 +29,7 @@ const ChangePasswordPage = lazy(() => import("./pages/change-password-page"));
 const BankAccountsReportsPage = lazy(
   () => import("./pages/bank-accounts-reports-page")
 );
+const FastDepositPage = lazy(() => import("./pages/fast-deposit-page"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -139,6 +140,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <ChangePasswordPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/fast-deposit"
+                element={
+                  <ProtectedRoute>
+                    <FastDepositPage />
                   </ProtectedRoute>
                 }
               />

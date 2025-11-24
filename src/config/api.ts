@@ -35,5 +35,10 @@ export const API_CONFIG = {
       CURRENCIES: "/common/lookups/currencies",
       PAYMENT_METHODS: "/common/lookups/payment-methods",
     },
+    VENDOR: {
+      COMMISSIONS_PAYMENTS: "/vendor/commissions/payments",
+      PAYMENT_METHOD_COMMISSION: "/vendor/payment-methods",
+      PAYMENT_METHOD_COMMISSION_UPDATE: "/vendor/payment-methods",
+    },
   },
 } as const;

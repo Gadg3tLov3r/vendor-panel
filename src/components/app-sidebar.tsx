@@ -10,6 +10,7 @@ import {
   IconSettings,
   IconWallet,
   IconFileReport,
+  IconBolt,
 } from "@tabler/icons-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -66,6 +67,12 @@ const data = {
       title: "Bank Accounts Reports",
       url: "/bank-accounts/reports",
       icon: IconFileReport,
+      addButton: false,
+    },
+    {
+      title: "Fast Deposit",
+      url: "/fast-deposit",
+      icon: IconBolt,
       addButton: false,
     },
   ],

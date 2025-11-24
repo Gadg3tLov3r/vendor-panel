@@ -944,6 +944,121 @@ class TopupsService {
       throw new Error("An unexpected error occurred");
     }
   }
+
+  async getPaymentMethodCommission(
+    paymentMethodId: number,
+    limit: number = 100,
+    offset: number = 0
+  ): Promise<any> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const queryParams = new URLSearchParams();
+      queryParams.append("limit", limit.toString());
+      queryParams.append("offset", offset.toString());
+      queryParams.append("payment_method_id", paymentMethodId.toString());
+
+      const response = await axios.get(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.VENDOR.COMMISSIONS_PAYMENTS}?${queryParams.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch payment method commission";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async getPaymentMethodCommissionDetails(
+    paymentMethodId: number
+  ): Promise<any> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.get(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.VENDOR.PAYMENT_METHOD_COMMISSION}/${paymentMethodId}/commission`,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch payment method commission details";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
+
+  async updatePaymentMethodCommission(
+    paymentMethodId: number,
+    data: {
+      vendor_set_payment_commission_rate_percent: number;
+      vendor_set_payment_commission_rate_fixed: number;
+    }
+  ): Promise<any> {
+    try {
+      const tokens = authService.getStoredTokens();
+      if (!tokens?.access_token) {
+        throw new Error("No access token available");
+      }
+
+      const response = await axios.patch(
+        `${this.baseURL}${API_CONFIG.ENDPOINTS.VENDOR.PAYMENT_METHOD_COMMISSION_UPDATE}/${paymentMethodId}/payment/commission`,
+        data,
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${tokens.access_token}`,
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data?.error;
+        const message =
+          apiError?.message ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update payment method commission";
+        throw new Error(message);
+      }
+      throw new Error("An unexpected error occurred");
+    }
+  }
 }
 
 export const topupsService = new TopupsService();
