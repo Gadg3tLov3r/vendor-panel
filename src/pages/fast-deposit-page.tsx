@@ -166,8 +166,9 @@ export default function FastDepositPage() {
       });
       toast.success("Commission updated successfully!");
       setEditDialogOpen(false);
-      // Refresh the commission details
+      // Refresh the commission details and commission information table
       await fetchCommissionDetails();
+      await fetchCommission();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Failed to update commission";
