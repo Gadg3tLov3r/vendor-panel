@@ -32,7 +32,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Edit } from "lucide-react";
+import { Edit, AlertTriangle } from "lucide-react";
 
 interface CommissionData {
   vwm_id: number;
@@ -151,6 +151,14 @@ export default function FastDepositPage() {
 
   const handleUpdateCommission = async () => {
     if (!paymentMethodId || !commissionDetails) {
+      return;
+    }
+
+    if (
+      !editData.vendor_set_payment_commission_rate_percent ||
+      editData.vendor_set_payment_commission_rate_percent.trim() === ""
+    ) {
+      toast.error("Please enter a commission rate");
       return;
     }
 
@@ -326,91 +334,85 @@ export default function FastDepositPage() {
         )}
 
         {paymentMethodId && commissionDetails && (
-          <Card className="min-w-0">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Commission Details</CardTitle>
-                <Button
-                  onClick={handleEditClick}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  Set your own commission
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="min-w-0 p-4">
-              {loadingDetails ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Skeleton className="h-20 w-full" />
-                  <Skeleton className="h-20 w-full" />
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Card className="border">
-                    <CardContent className="p-3">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          System Rate
-                        </p>
-                        <p className="text-xl font-bold">
-                          {formatPercent(
-                            commissionDetails.payment_commission_rate_percent
-                          )}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-primary/50 bg-primary/5">
-                    <CardContent className="p-3">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">
-                          Vendor Set Rate
-                        </p>
-                        {commissionDetails.vendor_set_payment_commission_rate_percent ? (
-                          <>
-                            <p className="text-xl font-bold text-primary">
-                              {formatPercent(
-                                commissionDetails.vendor_set_payment_commission_rate_percent
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {loadingDetails ? (
+              <>
+                <Skeleton className="h-20 w-full rounded-lg" />
+                <Skeleton className="h-20 w-full rounded-lg" />
+              </>
+            ) : (
+              <>
+                <Card className="min-w-0">
+                  <CardContent className="p-4">
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        System Commission Rate
+                      </p>
+                      <p className="text-xl font-bold">
+                        {formatPercent(
+                          commissionDetails.payment_commission_rate_percent
+                        )}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="min-w-0 border-primary/50 bg-primary/5">
+                  <CardContent className="p-4">
+                    <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Vendor Set Commission Rate
+                      </p>
+                      {commissionDetails.vendor_set_payment_commission_rate_percent ? (
+                        <>
+                          <p className="text-xl font-bold text-primary">
+                            {formatPercent(
+                              commissionDetails.vendor_set_payment_commission_rate_percent
+                            )}
+                          </p>
+                          {commissionDetails.vendor_payment_commission_last_set_at && (
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Last updated:{" "}
+                              {formatDate(
+                                commissionDetails.vendor_payment_commission_last_set_at
                               )}
                             </p>
-                            {commissionDetails.vendor_payment_commission_last_set_at && (
-                              <p className="text-[10px] text-muted-foreground mt-0.5">
-                                Last updated:{" "}
-                                {formatDate(
-                                  commissionDetails.vendor_payment_commission_last_set_at
-                                )}
-                              </p>
-                            )}
-                          </>
-                        ) : (
-                          <p className="text-xs text-muted-foreground italic">
-                            Not set yet
-                          </p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-xs text-muted-foreground italic">
+                          Not set yet
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
         )}
 
         {paymentMethodId && (
           <Card className="min-w-0">
             <CardHeader>
-              <CardTitle>
-                Commission Information
-                {commissionData.length > 0 && (
-                  <span className="text-sm font-normal text-muted-foreground ml-2">
-                    ({commissionData.length} wallet
-                    {commissionData.length !== 1 ? "s" : ""})
-                  </span>
+              <div className="flex items-center justify-between">
+                <CardTitle>Top 10 commission bids</CardTitle>
+                {commissionDetails && (
+                  <div className="flex flex-col items-end gap-1">
+                    <Button
+                      onClick={handleEditClick}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      place your commission bid
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      lower commission, higher traffic
+                    </p>
+                  </div>
                 )}
-              </CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="min-w-0 p-4">
               {loading ? (
@@ -481,16 +483,28 @@ export default function FastDepositPage() {
                 <Input
                   id="vendor_set_payment_commission_rate_percent"
                   type="number"
-                  step="0.01"
+                  step="0.1"
+                  required
                   value={editData.vendor_set_payment_commission_rate_percent}
-                  onChange={(e) =>
-                    setEditData({
-                      ...editData,
-                      vendor_set_payment_commission_rate_percent:
-                        e.target.value,
-                    })
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow empty, numbers, and numbers with one decimal place
+                    if (value === "" || /^\d*\.?\d{0,1}$/.test(value)) {
+                      setEditData({
+                        ...editData,
+                        vendor_set_payment_commission_rate_percent: value,
+                      });
+                    }
+                  }}
                 />
+              </div>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50 p-3 flex gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-amber-900 dark:text-amber-100 font-medium">
+                  Once you submit your bid, it will be locked and cannot be
+                  modified for the next 12 hours. Please review carefully before
+                  confirming.
+                </p>
               </div>
             </div>
             <DialogFooter>
@@ -502,7 +516,7 @@ export default function FastDepositPage() {
                 Cancel
               </Button>
               <Button onClick={handleUpdateCommission} disabled={updating}>
-                {updating ? "Updating..." : "Update"}
+                {updating ? "Confirming..." : "Confirm"}
               </Button>
             </DialogFooter>
           </DialogContent>
