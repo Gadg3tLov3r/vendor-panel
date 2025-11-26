@@ -405,7 +405,7 @@ export default function FastDepositPage() {
                       className="flex items-center gap-2"
                     >
                       <Edit className="h-4 w-4" />
-                      place your commission bid
+                      Place your commission bid
                     </Button>
                     <p className="text-xs text-muted-foreground">
                       lower commission, higher traffic
